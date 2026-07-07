@@ -133,7 +133,7 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
             <input
               type="text"
               id="search"
-              className="w-full pl-10 pr-4 py-2.5 bg-[#f0f6fa] border border-transparent rounded-xl focus:bg-white focus:border-[#61a4ca] focus:ring-2 focus:ring-[#bdd9e9] transition-all outline-none text-sm sm:text-base text-[#232e49] placeholder-[#232e49]/50"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#f0f6fa] border border-transparent rounded-xl focus:bg-white focus:border-[#61a4ca] focus:ring-2 focus:ring-[#bdd9e9] transition-all outline-none text-base text-[#232e49] placeholder-[#232e49]/50"
               placeholder="กรอกชื่อยา, ชื่อการค้า หรือหมวดหมู่ที่ต้องการค้นหา..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
