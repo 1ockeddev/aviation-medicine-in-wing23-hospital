@@ -7,7 +7,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-
-# Ensure DATABASE_URL is available during build
-[context.production.environment]
-  NODE_ENV = "production"
