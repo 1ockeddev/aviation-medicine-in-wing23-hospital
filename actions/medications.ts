@@ -3,6 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+
+// Helper to revalidate all relevant pages
+function revalidateAll() {
+  revalidatePath('/');
+  revalidatePath('/admin/categories');
+  revalidatePath('/admin/medications');
+}
 import { MedicationSchema } from '@/lib/validations';
 import type { ActionState } from '@/types';
 

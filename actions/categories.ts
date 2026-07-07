@@ -3,6 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+
+// Helper to revalidate all relevant pages
+function revalidateAll() {
+  revalidatePath('/');
+  revalidatePath('/admin/categories');
+  revalidatePath('/admin/medications');
+}
 import { CategorySchema } from '@/lib/validations';
 import type { ActionState } from '@/types';
 
@@ -88,7 +95,7 @@ export async function createCategory(
         order: nextOrder,
       },
     });
-    revalidatePath('/admin/categories');
+    revalidateAll();
     return { success: true };
   } catch (error) {
     console.error('Category creation error:', error);
@@ -169,7 +176,7 @@ export async function updateCategory(
       where: { id },
       data: validatedFields.data,
     });
-    revalidatePath('/admin/categories');
+    revalidateAll();
     return { success: true };
   } catch (error) {
     console.error('Category update error:', error);
@@ -217,7 +224,7 @@ export async function deleteCategory(
       where: { id },
     });
 
-    revalidatePath('/admin/categories');
+    revalidateAll();
     return { success: true };
   } catch (error) {
     console.error('Category deletion error:', error);
@@ -299,7 +306,7 @@ export async function updateCategoryOrder(input: {
       )
     );
 
-    revalidatePath('/admin/categories');
+    revalidateAll();
     return { success: true };
   } catch (error) {
     console.error('Category order update error:', error);
@@ -368,7 +375,7 @@ export async function reorderCategory(
       }),
     ]);
 
-    revalidatePath('/admin/categories');
+    revalidateAll();
     return { success: true };
   } catch (error) {
     console.error('Category reorder error:', error);

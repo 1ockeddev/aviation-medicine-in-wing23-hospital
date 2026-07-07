@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { HomeClientPage } from './HomeClientPage';
 
+// Disable caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getMedications() {
   return await prisma.medication.findMany({
     include: {

@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { CategoriesClientPage } from './CategoriesClientPage';
 
+// Disable caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getCategories() {
   const categories = await prisma.category.findMany({
     where: {
