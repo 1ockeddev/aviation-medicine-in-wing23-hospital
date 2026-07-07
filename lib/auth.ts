@@ -5,10 +5,12 @@ import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
   },
+  trustHost: true, // Important for Netlify deployment
   providers: [
     CredentialsProvider({
       name: 'Credentials',
