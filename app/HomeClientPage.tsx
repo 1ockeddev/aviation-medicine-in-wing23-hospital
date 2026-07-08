@@ -102,7 +102,7 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
         {/* AlphaJet Animation (middle layer) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <Image
-            src="/bg/alphajet.png"
+            src="/bg/alphajet-01.png"
             alt="AlphaJet"
             width={1200}
             height={392}
@@ -137,10 +137,10 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
                 />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#232e49]">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#232e49]" style={{ textShadow: '0 0 12px rgba(255, 255, 255, 1), 0 0 24px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(255, 255, 255, 1), 0 4px 16px rgba(255, 255, 255, 0.8)' }}>
                   Aviation Medicine in Wing23 Hospital
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5" style={{ textShadow: '0 0 8px rgba(255, 255, 255, 1), 0 0 16px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(255, 255, 255, 1)' }}>
                   โรงพยาบาลกองบิน กองบิน 23
                 </p>
               </div>
