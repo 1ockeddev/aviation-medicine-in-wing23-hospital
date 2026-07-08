@@ -213,7 +213,7 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
                           : 'bg-gray-100 text-gray-700 border-gray-200'
                       }`}>
                         <span className="relative inline-flex">
-                          <span className={`w-2 h-2 rounded-full ${
+                          <span className={`w-1.5 h-1.5 rounded-full ${
                             selectedMedication.status === 'Y' || selectedMedication.status === 'Y*'
                               ? 'bg-green-500'
                               : selectedMedication.status === 'N' || selectedMedication.status === 'N*'

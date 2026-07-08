@@ -148,7 +148,7 @@ function MedicationItem({ medication, searchQuery, onClick, isSelected = false, 
         <span className="text-xs sm:text-sm font-medium" style={{ color: USER_COLORS.darkSlateBlue }}>FAA Approval : </span>
         <span className="relative inline-flex">
           <span
-            className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+            className="inline-block w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
             style={{ backgroundColor: statusColor }}
             aria-hidden="true"
           />
