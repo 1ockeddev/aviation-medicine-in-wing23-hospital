@@ -146,19 +146,35 @@ function MedicationItem({ medication, searchQuery, onClick, isSelected = false, 
       {/* Simple status badge */}
       <div className="flex items-center gap-1 sm:gap-2">
         <span className="text-xs sm:text-sm font-medium" style={{ color: USER_COLORS.darkSlateBlue }}>FAA Approval : </span>
-        <span className="relative inline-flex">
-          <span
-            className="inline-block w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-            style={{ backgroundColor: statusColor }}
-            aria-hidden="true"
-          />
-          <span
-            className="absolute inset-0 rounded-full animate-radio-ripple"
-            style={{ backgroundColor: statusColor }}
-            aria-hidden="true"
-          />
-        </span>
-        <span className="text-xs sm:text-sm font-medium" style={{ color: USER_COLORS.darkSlateBlue }}>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-md border flex items-center gap-1 ${
+          medication.status === 'Y' || medication.status === 'Y*'
+            ? 'bg-green-100 text-green-700 border-green-200'
+            : medication.status === 'N' || medication.status === 'N*'
+            ? 'bg-red-100 text-red-700 border-red-200'
+            : medication.status === 'ยาฉุกเฉิน'
+            ? 'bg-orange-100 text-orange-700 border-orange-200'
+            : 'bg-gray-100 text-gray-700 border-gray-200'
+        }`}>
+          <span className="relative inline-flex">
+            <span className={`w-2 h-2 rounded-full ${
+              medication.status === 'Y' || medication.status === 'Y*'
+                ? 'bg-green-500'
+                : medication.status === 'N' || medication.status === 'N*'
+                ? 'bg-red-500'
+                : medication.status === 'ยาฉุกเฉิน'
+                ? 'bg-orange-500'
+                : 'bg-gray-500'
+            }`}></span>
+            <span className={`absolute inset-0 rounded-full animate-radio-ripple ${
+              medication.status === 'Y' || medication.status === 'Y*'
+                ? 'bg-green-500'
+                : medication.status === 'N' || medication.status === 'N*'
+                ? 'bg-red-500'
+                : medication.status === 'ยาฉุกเฉิน'
+                ? 'bg-orange-500'
+                : 'bg-gray-500'
+            }`}></span>
+          </span>
           {medication.status}
         </span>
       </div>
