@@ -102,7 +102,7 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
         {/* AlphaJet Animation (middle layer) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <Image
-            src="/bg/alphajet.png"
+            src="/bg/alphajet-01.png"
             alt="AlphaJet"
             width={1200}
             height={392}
