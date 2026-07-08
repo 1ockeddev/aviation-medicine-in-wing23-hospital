@@ -88,9 +88,34 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-md border-b border-gray-200 relative overflow-hidden">
-        {/* Dot Grid Pattern Background */}
+        {/* Background Video (lowest layer) */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/bg/7317304-uhd_3840_2160_25fps.mp4" type="video/mp4" />
+        </video>
+
+        {/* AlphaJet Animation (middle layer) */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <Image
+            src="/bg/alphajet.png"
+            alt="AlphaJet"
+            width={1200}
+            height={392}
+            className="absolute animate-fly-across opacity-60 w-[180px] h-auto sm:w-[270px] lg:w-[360px]"
+            style={{
+              right: '10%',
+            }}
+          />
+        </div>
+
+        {/* Dot Grid Pattern Background (top layer) */}
         <div 
-          className="absolute inset-0 opacity-[0.15]"
+          className="absolute inset-0 opacity-[0.15] z-[1]"
           style={{
             backgroundImage: `radial-gradient(circle, #61a4ca 1px, transparent 1px)`,
             backgroundSize: '20px 20px',
@@ -104,7 +129,7 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 flex-shrink-0">
                 <Image
-                  src="/wing23-logo.jpg"
+                  src="/wing23-logo.png"
                   alt="Wing 23 Hospital Logo"
                   fill
                   className="object-contain rounded-lg"

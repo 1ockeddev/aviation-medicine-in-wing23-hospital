@@ -74,16 +74,15 @@ export function AccordionToggle({
         'min-w-[44px] min-h-[44px]',
         // Layout
         'flex items-center justify-center flex-shrink-0',
-        // Interactive states - using Design System colors
-        'hover:bg-[#8fbed9]',
-        'active:bg-[#8fbed9]',
         // Visual styling
         'rounded',
-        'transition-colors duration-150',
         // Touch optimization
         'touch-manipulation',
         // Remove focus ring and outline (no border when clicked)
         'focus:outline-none focus:ring-0',
+        // Add rotation animation
+        'transition-transform duration-300 ease-in-out',
+        isExpanded ? 'rotate-180' : 'rotate-0',
         className
       )}
     >

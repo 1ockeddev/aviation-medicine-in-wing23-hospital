@@ -85,7 +85,7 @@ export function CategoryHeader({
       className={cn(
         // Layout - full width tappable on mobile
         'w-full flex items-center justify-between gap-4',
-        'px-4 py-3 md:px-6 md:py-4',
+        'px-4',
         // Background and hover state with Soft Blue Gradient
         'bg-transparent',
         'hover:bg-gradient-to-r hover:from-[#99c4dd] hover:via-[#8fbed9] hover:to-[#bdd9e9]',
@@ -113,7 +113,7 @@ export function CategoryHeader({
         </span>
       </div>
 
-      {/* Accordion toggle with correct Soft Blue hover */}
+      {/* Accordion toggle */}
       <AccordionToggle
         isExpanded={isExpanded}
         hasChildren={showToggle}
@@ -127,10 +127,6 @@ export function CategoryHeader({
             : `ขยายหมวดหมู่ ${category.name}`
         }
         className={cn(
-          // Correct hover color - Soft Blue Gradient medium
-          'hover:!bg-[#8fbed9]',
-          // Same for active
-          'active:!bg-[#8fbed9]',
           // Icon color - Medium Blue
           '[&_svg]:!text-[#61a4ca]',
           // Remove focus ring and offset (causes white border)
