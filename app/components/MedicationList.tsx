@@ -145,11 +145,19 @@ function MedicationItem({ medication, searchQuery, onClick, isSelected = false, 
 
       {/* Simple status badge */}
       <div className="flex items-center gap-1 sm:gap-2">
-        <span
-          className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-          style={{ backgroundColor: statusColor }}
-          aria-hidden="true"
-        />
+        <span className="text-xs sm:text-sm font-medium" style={{ color: USER_COLORS.darkSlateBlue }}>FAA Approval : </span>
+        <span className="relative inline-flex">
+          <span
+            className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+            style={{ backgroundColor: statusColor }}
+            aria-hidden="true"
+          />
+          <span
+            className="absolute inset-0 rounded-full animate-radio-ripple"
+            style={{ backgroundColor: statusColor }}
+            aria-hidden="true"
+          />
+        </span>
         <span className="text-xs sm:text-sm font-medium" style={{ color: USER_COLORS.darkSlateBlue }}>
           {medication.status}
         </span>

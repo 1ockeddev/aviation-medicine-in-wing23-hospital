@@ -199,26 +199,42 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
                     <span className="text-xs font-bold px-2.5 py-1 bg-[#ddebf4] text-[#232e49] rounded-md">
                       {selectedMedication.category.name}
                     </span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-md border flex items-center gap-1 ${
-                      selectedMedication.status === 'Y' || selectedMedication.status === 'Y*'
-                        ? 'bg-green-100 text-green-700 border-green-200'
-                        : selectedMedication.status === 'N' || selectedMedication.status === 'N*'
-                        ? 'bg-red-100 text-red-700 border-red-200'
-                        : selectedMedication.status === 'ยาฉุกเฉิน'
-                        ? 'bg-orange-100 text-orange-700 border-orange-200'
-                        : 'bg-gray-100 text-gray-700 border-gray-200'
-                    }`}>
-                      <span className={`w-2 h-2 rounded-full ${
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-600">
+                        FAA Approval:
+                      </span>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-md border flex items-center gap-1 ${
                         selectedMedication.status === 'Y' || selectedMedication.status === 'Y*'
-                          ? 'bg-green-500'
+                          ? 'bg-green-100 text-green-700 border-green-200'
                           : selectedMedication.status === 'N' || selectedMedication.status === 'N*'
-                          ? 'bg-red-500'
+                          ? 'bg-red-100 text-red-700 border-red-200'
                           : selectedMedication.status === 'ยาฉุกเฉิน'
-                          ? 'bg-orange-500'
-                          : 'bg-gray-500'
-                      }`}></span>
-                      {selectedMedication.status}
-                    </span>
+                          ? 'bg-orange-100 text-orange-700 border-orange-200'
+                          : 'bg-gray-100 text-gray-700 border-gray-200'
+                      }`}>
+                        <span className="relative inline-flex">
+                          <span className={`w-2 h-2 rounded-full ${
+                            selectedMedication.status === 'Y' || selectedMedication.status === 'Y*'
+                              ? 'bg-green-500'
+                              : selectedMedication.status === 'N' || selectedMedication.status === 'N*'
+                              ? 'bg-red-500'
+                              : selectedMedication.status === 'ยาฉุกเฉิน'
+                              ? 'bg-orange-500'
+                              : 'bg-gray-500'
+                          }`}></span>
+                          <span className={`absolute inset-0 rounded-full animate-radio-ripple ${
+                            selectedMedication.status === 'Y' || selectedMedication.status === 'Y*'
+                              ? 'bg-green-500'
+                              : selectedMedication.status === 'N' || selectedMedication.status === 'N*'
+                              ? 'bg-red-500'
+                              : selectedMedication.status === 'ยาฉุกเฉิน'
+                              ? 'bg-orange-500'
+                              : 'bg-gray-500'
+                          }`}></span>
+                        </span>
+                        {selectedMedication.status}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Medication Name */}
