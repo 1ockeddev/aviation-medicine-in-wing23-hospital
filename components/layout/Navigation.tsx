@@ -15,6 +15,11 @@ const navItems = [
     href: '/admin/categories',
     icon: '📋',
   },
+  {
+    label: 'LINE Users',
+    href: '/admin/line-users',
+    icon: '👥',
+  },
 ];
 
 interface NavigationProps {

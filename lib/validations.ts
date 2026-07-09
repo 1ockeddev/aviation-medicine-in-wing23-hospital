@@ -48,3 +48,27 @@ export const LoginSchema = z.object({
   username: z.string().min(1, 'กรุณากรอกชื่อผู้ใช้'),
   password: z.string().min(1, 'กรุณากรอกรหัสผ่าน'),
 });
+
+// LINE User validation schema
+// Validates requirements: 2.4, 10.2
+export const LineUserSchema = z.object({
+  // Required field: LINE User ID (Req 2.4)
+  lineUserId: z.string().min(1, 'LINE User ID is required'),
+  
+  // Required field: Display Name (Req 2.4)
+  displayName: z.string().min(1, 'Display name is required'),
+  
+  // Optional field: Picture URL - must be valid URL or empty string (Req 2.4)
+  pictureUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
+  
+  // Required field: Notifications enabled status (Req 10.2)
+  notificationsEnabled: z.boolean(),
+  
+  // Required field: Days before expiration for notification (Req 10.2)
+  // Must be integer between 1 and 90 days
+  daysBeforeExpiration: z
+    .number()
+    .int()
+    .min(1, 'Must be at least 1 day')
+    .max(90, 'Must be at most 90 days'),
+});

@@ -101,3 +101,19 @@ model Medication {
   @@index([tradeName])
   @@map("medications")
 }
+
+model LineUser {
+  id                    String   @id @default(cuid())
+  lineUserId            String   @unique
+  displayName           String
+  pictureUrl            String?
+  notificationsEnabled  Boolean  @default(true)
+  daysBeforeExpiration  Int      @default(30)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([lineUserId])
+  @@index([notificationsEnabled])
+  @@map("line_users")
+}
