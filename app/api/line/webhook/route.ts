@@ -17,17 +17,28 @@ export async function POST(request: NextRequest) {
   try {
     // Get request body
     const body = await request.text();
-    const events = JSON.parse(body).events;
-
-    // Verify LINE signature
+    
+    // Verify LINE signature first
     const signature = request.headers.get('x-line-signature');
-    if (!signature || !verifySignature(body, signature)) {
+    if (!signature) {
+      console.error('Missing LINE signature', {
+        operation,
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    }
+
+    if (!verifySignature(body, signature)) {
       console.error('Invalid LINE signature', {
         operation,
+        hasChannelSecret: !!process.env.LINE_CHANNEL_SECRET,
         timestamp: new Date().toISOString(),
       });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
+
+    // Parse events after signature verification
+    const events = JSON.parse(body).events;
 
     console.log('Webhook received', {
       operation,
@@ -35,31 +46,18 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
-    // Process each event
-    for (const event of events) {
-      try {
-        // Handle follow event (user adds friend)
-        if (event.type === 'follow') {
-          await handleFollowEvent(event);
-        }
+    // Process events asynchronously (don't await)
+    // LINE requires response within 3 seconds, so we process in background
+    processEventsAsync(events).catch((error) => {
+      console.error('Background event processing error', {
+        operation,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+    });
 
-        // Handle message event (user sends message)
-        if (event.type === 'message') {
-          await handleMessageEvent(event);
-        }
-      } catch (error) {
-        console.error('Error processing event', {
-          operation,
-          eventType: event.type,
-          userId: event.source.userId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date().toISOString(),
-        });
-        // Continue processing other events
-      }
-    }
-
-    return NextResponse.json({ success: true });
+    // Return immediately to LINE (must be 200 OK)
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Webhook error', {
       operation,
@@ -68,10 +66,35 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
-    );
+    // Still return 200 to LINE to avoid retries
+    return NextResponse.json({ success: false }, { status: 200 });
+  }
+}
+
+/**
+ * Process events asynchronously in background
+ */
+async function processEventsAsync(events: any[]) {
+  for (const event of events) {
+    try {
+      // Handle follow event (user adds friend)
+      if (event.type === 'follow') {
+        await handleFollowEvent(event);
+      }
+
+      // Handle message event (user sends message)
+      if (event.type === 'message') {
+        await handleMessageEvent(event);
+      }
+    } catch (error) {
+      console.error('Error processing event', {
+        eventType: event.type,
+        userId: event.source.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+      // Continue processing other events
+    }
   }
 }
 
