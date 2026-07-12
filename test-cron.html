@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ทดสอบ Cron Job - LINE Notification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #555;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #06c755;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #05b34a;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    .result.success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .result.error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .result pre {
+      background-color: rgba(0,0,0,0.05);
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    .info {
+      background-color: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔔 ทดสอบ Cron Job - LINE Notification</h1>
+    
+    <div class="info">
+      <strong>💡 คำแนะนำ:</strong> 
+      <ul>
+        <li>เลือก Environment ที่ต้องการทดสอบ (Local หรือ Production)</li>
+        <li>ตรวจสอบว่า CRON_SECRET ถูกต้อง</li>
+        <li>กดปุ่ม "ทดสอบ Cron Job" เพื่อส่ง request</li>
+        <li>ระบบจะตรวจสอบยาที่ใกล้หมดอายุและส่งแจ้งเตือนไปยัง LINE Users</li>
+      </ul>
+    </div>
+
+    <div class="form-group">
+      <label for="environment">Environment:</label>
+      <select id="environment">
+        <option value="local">Local (http://localhost:3000)</option>
+        <option value="production" selected>Production (Netlify)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="cronSecret">CRON_SECRET:</label>
+      <input 
+        type="text" 
+        id="cronSecret" 
+        placeholder="ใส่ CRON_SECRET จาก .env"
+        value="4T+uTdfZRpZQeFxWmh3RFKZnicnKTy4Ir7t8QZbMB4A="
+      />
+    </div>
+
+    <button id="testButton" onclick="testCronJob()">
+      ทดสอบ Cron Job
+    </button>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    async function testCronJob() {
+      const button = document.getElementById('testButton');
+      const resultDiv = document.getElementById('result');
+      const environment = document.getElementById('environment').value;
+      const cronSecret = document.getElementById('cronSecret').value;
+
+      // Validate inputs
+      if (!cronSecret) {
+        alert('กรุณาใส่ CRON_SECRET');
+        return;
+      }
+
+      // Determine endpoint URL
+      const baseUrl = environment === 'local' 
+        ? 'http://localhost:3000'
+        : 'https://aviation-medicine-in-wing23-hospital.netlify.app';
+      
+      const endpoint = `${baseUrl}/api/cron/check-expiry`;
+
+      // Show loading state
+      button.disabled = true;
+      button.textContent = 'กำลังทดสอบ...';
+      resultDiv.style.display = 'none';
+
+      try {
+        const startTime = Date.now();
+        
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${cronSecret}`,
+          },
+        });
+
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        const data = await response.json();
+
+        // Display result
+        resultDiv.style.display = 'block';
+        
+        if (response.ok) {
+          resultDiv.className = 'result success';
+          resultDiv.innerHTML = `
+            <h3>✅ สำเร็จ!</h3>
+            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+            <p><strong>การแจ้งเตือนที่ส่ง:</strong> ${data.notificationsSent || 0} ข้อความ</p>
+            <p><strong>เวลาที่ใช้:</strong> ${duration} ms (Frontend) / ${data.duration || 'N/A'} ms (Backend)</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } else {
+          resultDiv.className = 'result error';
+          resultDiv.innerHTML = `
+            <h3>❌ ล้มเหลว</h3>
+            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+            <p><strong>Error:</strong> ${data.error || 'Unknown error'}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = `
+          <h3>❌ เกิดข้อผิดพลาด</h3>
+          <p><strong>Error:</strong> ${error.message}</p>
+          <p>ตรวจสอบว่า:</p>
+          <ul>
+            <li>Server กำลังทำงานอยู่หรือไม่</li>
+            <li>URL ถูกต้องหรือไม่</li>
+            <li>CRON_SECRET ถูกต้องหรือไม่</li>
+            <li>Environment variables ตั้งค่าใน Netlify แล้วหรือยัง</li>
+          </ul>
+        `;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'ทดสอบ Cron Job';
+      }
+    }
+  </script>
+</body>
+</html>

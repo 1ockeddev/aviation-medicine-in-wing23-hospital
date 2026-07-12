@@ -228,8 +228,18 @@ async function upsertLineUser(profile: {
  */
 function verifySignature(body: string, signature: string): boolean {
   const channelSecret = process.env.LINE_CHANNEL_SECRET;
+  
+  // Debug logging
+  console.log('Signature verification debug', {
+    hasChannelSecret: !!channelSecret,
+    channelSecretLength: channelSecret?.length || 0,
+    signatureReceived: signature?.substring(0, 10) + '...',
+    bodyLength: body.length,
+    timestamp: new Date().toISOString(),
+  });
+  
   if (!channelSecret) {
-    console.error('LINE_CHANNEL_SECRET not configured');
+    console.error('LINE_CHANNEL_SECRET not configured - check Netlify environment variables');
     return false;
   }
 
@@ -238,5 +248,15 @@ function verifySignature(body: string, signature: string): boolean {
     .update(body)
     .digest('base64');
 
-  return hash === signature;
+  const isValid = hash === signature;
+  
+  if (!isValid) {
+    console.error('Signature mismatch', {
+      computed: hash.substring(0, 10) + '...',
+      received: signature.substring(0, 10) + '...',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return isValid;
 }

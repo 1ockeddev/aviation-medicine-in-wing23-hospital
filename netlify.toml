@@ -1,9 +1,29 @@
+# Netlify Configuration
+
 [build]
-  command = "npx prisma generate && npm run build"
+  command = "npm run build"
   publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-[build.environment]
-  NODE_VERSION = "20"
+# Scheduled Functions (Cron Jobs)
+# Documentation: https://docs.netlify.com/functions/scheduled-functions/
+
+[[functions]]
+  # Medication expiry check - runs daily at 9:00 AM Bangkok time (2:00 AM UTC)
+  path = "/api/cron/check-expiry"
+  schedule = "0 2 * * *"  # Cron expression: every day at 2:00 AM UTC (9:00 AM ICT)
+
+# Environment Variables
+# Note: Set these in Netlify Dashboard > Site settings > Environment variables
+# Required variables:
+# - DATABASE_URL (Neon PostgreSQL connection string)
+# - NEXTAUTH_SECRET (generate with: openssl rand -base64 32)
+# - AUTH_SECRET (same as NEXTAUTH_SECRET)
+# - NEXTAUTH_URL (your Netlify site URL)
+# - LINE_CHANNEL_ID
+# - LINE_CHANNEL_SECRET
+# - LINE_CHANNEL_ACCESS_TOKEN
+# - CRON_SECRET (generate with: openssl rand -base64 32)
+# - NEXT_PUBLIC_APP_URL (your Netlify site URL)
