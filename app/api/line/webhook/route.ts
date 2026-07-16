@@ -81,27 +81,58 @@ export async function POST(request: NextRequest) {
  * Process events asynchronously in background
  */
 async function processEventsAsync(events: any[]) {
+  console.log('processEventsAsync started', {
+    eventCount: events.length,
+    timestamp: new Date().toISOString(),
+  });
+
   for (const event of events) {
+    console.log('Processing event', {
+      eventType: event.type,
+      userId: event.source?.userId,
+      timestamp: new Date().toISOString(),
+    });
+
     try {
       // Handle follow event (user adds friend)
       if (event.type === 'follow') {
+        console.log('Handling follow event', {
+          userId: event.source?.userId,
+          timestamp: new Date().toISOString(),
+        });
         await handleFollowEvent(event);
       }
 
       // Handle message event (user sends message)
       if (event.type === 'message') {
+        console.log('Handling message event', {
+          userId: event.source?.userId,
+          messageType: event.message?.type,
+          timestamp: new Date().toISOString(),
+        });
         await handleMessageEvent(event);
       }
+
+      console.log('Event processed successfully', {
+        eventType: event.type,
+        userId: event.source?.userId,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Error processing event', {
         eventType: event.type,
-        userId: event.source.userId,
+        userId: event.source?.userId,
         error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString(),
       });
       // Continue processing other events
     }
   }
+
+  console.log('processEventsAsync completed', {
+    timestamp: new Date().toISOString(),
+  });
 }
 
 /**
@@ -143,10 +174,37 @@ async function handleMessageEvent(event: any) {
     timestamp: new Date().toISOString(),
   });
 
-  // Check if user exists in database
-  const existingUser = await prisma.lineUser.findUnique({
-    where: { lineUserId: userId },
+  console.log('Checking if user exists in database', {
+    userId,
+    timestamp: new Date().toISOString(),
   });
+
+  // Check if user exists in database with timeout
+  let existingUser;
+  try {
+    existingUser = await Promise.race([
+      prisma.lineUser.findUnique({
+        where: { lineUserId: userId },
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 5000)
+      )
+    ]);
+
+    console.log('User check completed', {
+      userId,
+      userExists: !!existingUser,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error checking user', {
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    });
+    // Continue anyway
+    existingUser = null;
+  }
 
   // If user doesn't exist, register them
   if (!existingUser) {
