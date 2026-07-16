@@ -181,74 +181,65 @@ async function handleMessageEvent(event: any) {
     timestamp: new Date().toISOString(),
   });
 
-  // Check if user exists in database with timeout
-  let existingUser = null;
-  try {
-    const queryPromise = prisma.lineUser.findUnique({
-      where: { lineUserId: userId },
-    });
-
-    const timeoutPromise = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Database query timeout after 5s')), 5000)
-    );
-
-    existingUser = await Promise.race([queryPromise, timeoutPromise]);
-
-    console.log('User check completed', {
-      userId,
-      userExists: !!existingUser,
-      userName: existingUser?.displayName,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Error checking user in database', {
-      userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      databaseUrlLength: process.env.DATABASE_URL?.length,
-      timestamp: new Date().toISOString(),
-    });
-    
-    // Continue without user data
-    console.log('Continuing without user check due to error');
-  }
-
-  // If user doesn't exist, register them
-  if (!existingUser) {
-    console.log('User does not exist, registering', {
-      userId,
-      timestamp: new Date().toISOString(),
-    });
-
+  // Start user check in background (don't await)
+  // We want to handle P command immediately even if DB is slow
+  const userCheckPromise = (async () => {
     try {
-      const profile = await getUserProfile(userId);
-      if (profile) {
-        await upsertLineUser(profile);
-        console.log('User registered successfully', {
+      const queryPromise = prisma.lineUser.findUnique({
+        where: { lineUserId: userId },
+      });
+
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout after 5s')), 5000)
+      );
+
+      const user = await Promise.race([queryPromise, timeoutPromise]);
+
+      console.log('User check completed', {
+        userId,
+        userExists: !!user,
+        userName: user?.displayName,
+        timestamp: new Date().toISOString(),
+      });
+
+      // If user doesn't exist, register them (in background)
+      if (!user) {
+        console.log('User does not exist, registering in background', {
           userId,
-          displayName: profile.displayName,
           timestamp: new Date().toISOString(),
         });
+
+        const profile = await getUserProfile(userId);
+        if (profile) {
+          await upsertLineUser(profile);
+          console.log('User registered successfully', {
+            userId,
+            displayName: profile.displayName,
+            timestamp: new Date().toISOString(),
+          });
+        }
       } else {
-        console.error('Failed to get user profile', {
+        console.log('User already exists', {
           userId,
+          displayName: user.displayName,
           timestamp: new Date().toISOString(),
         });
       }
     } catch (error) {
-      console.error('Error registering user', {
+      console.error('Error in user check/registration', {
         userId,
         error: error instanceof Error ? error.message : 'Unknown error',
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
         timestamp: new Date().toISOString(),
       });
     }
-  } else {
-    console.log('User already exists', {
-      userId,
-      displayName: existingUser.displayName,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  })();
+
+  // Don't await user check - continue immediately to handle commands
+  console.log('Proceeding to command handling (user check in background)', {
+    userId,
+    timestamp: new Date().toISOString(),
+  });
 
   console.log('About to check P command', {
     userId,
@@ -258,6 +249,8 @@ async function handleMessageEvent(event: any) {
   });
 
   // Handle "P" command - send expiry notification
+  // NOTE: We process P command regardless of user registration status
+  // to ensure users can still get medication info even if DB is slow
   if (messageText.trim().toUpperCase() === 'P') {
     console.log('P command received', {
       userId,
@@ -266,6 +259,10 @@ async function handleMessageEvent(event: any) {
 
     try {
       await sendExpiryNotificationToUser(userId);
+      console.log('P command completed successfully', {
+        userId,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Error in P command handler', {
         userId,
