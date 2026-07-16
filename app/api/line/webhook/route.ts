@@ -125,10 +125,12 @@ async function handleFollowEvent(event: any) {
  */
 async function handleMessageEvent(event: any) {
   const userId = event.source.userId;
+  const messageText = event.message.type === 'text' ? event.message.text : '';
 
   console.log('Message event received', {
     userId,
     messageType: event.message.type,
+    messageText,
     timestamp: new Date().toISOString(),
   });
 
@@ -143,6 +145,56 @@ async function handleMessageEvent(event: any) {
     if (profile) {
       await upsertLineUser(profile);
     }
+  }
+
+  // Handle "P" command - send expiry notification
+  if (messageText.trim().toUpperCase() === 'P') {
+    console.log('P command received', {
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Send expiry notification
+    await sendExpiryNotificationToUser(userId);
+  }
+}
+
+/**
+ * Send expiry notification to user
+ */
+async function sendExpiryNotificationToUser(userId: string) {
+  try {
+    // Import sendExpiryNotification function
+    const { sendExpiryNotification } = await import('@/lib/line-messaging');
+
+    console.log('Sending expiry notification', {
+      userId,
+      source: 'webhook_command',
+      timestamp: new Date().toISOString(),
+    });
+
+    const result = await sendExpiryNotification(userId);
+
+    if (result.success) {
+      console.log('Expiry notification sent successfully', {
+        userId,
+        medicationCount: result.medicationCount,
+        timestamp: new Date().toISOString(),
+      });
+    } else {
+      console.error('Failed to send expiry notification', {
+        userId,
+        error: result.error,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error) {
+    console.error('Error sending expiry notification', {
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 

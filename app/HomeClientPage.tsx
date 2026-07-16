@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { Medication, Category } from '@prisma/client';
 import { CategoryAccordion } from '@/app/components/CategoryAccordion';
@@ -20,6 +20,7 @@ interface HomeClientPageProps {
 }
 
 export function HomeClientPage({ medications, categories }: HomeClientPageProps) {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [screenReaderMessage, setScreenReaderMessage] = useState('');
   const [selectedMedication, setSelectedMedication] = useState<MedicationWithCategory | null>(null);
@@ -33,6 +34,29 @@ export function HomeClientPage({ medications, categories }: HomeClientPageProps)
     toggleCategory,
     expandCategories,
   } = useUserAccordionState();
+
+  // Handle URL query parameters from LINE Flex Message
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    const medicationIdParam = searchParams.get('medicationId');
+
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+
+    if (medicationIdParam) {
+      // Find and select the medication
+      const medication = medications.find(m => m.id === medicationIdParam);
+      if (medication) {
+        setSelectedMedication(medication);
+        
+        // Scroll to detail section after a short delay
+        setTimeout(() => {
+          detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 500);
+      }
+    }
+  }, [searchParams, medications]);
 
   // Filter categories based on search query (no popular categories, just filtered list)
   const filteredCategories = useMemo(() => {

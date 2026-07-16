@@ -187,18 +187,20 @@ describe('createExpirationFlexMessage', () => {
     expect(bodyContents[3].text).toBe('เหลืออีก 9 วัน');
   });
 
-  it('should create footer with "ดูรายละเอียดเพิ่มเติม" button linking to app URL', () => {
+  it('should create footer with "ดูรายละเอียดเพิ่มเติม" button linking to app URL with medication details', () => {
     const category = createMockCategory('cat1', 'ยาแก้ปวด');
     const medications = [
       createMockMedication('1', 'Paracetamol', 'cat1', new Date('2024-01-10'), category),
     ];
 
     const result = createExpirationFlexMessage(medications);
+
+    // For single medication, check the bubble directly
     const footer = result.contents.footer.contents[0];
 
     expect(footer.type).toBe('button');
     expect(footer.action.label).toBe('ดูรายละเอียดเพิ่มเติม');
-    expect(footer.action.uri).toBe('https://test-app.com');
+    expect(footer.action.uri).toBe('https://test-app.com?search=Paracetamol&medicationId=1');
   });
 
   it('should use fallback URL when NEXT_PUBLIC_APP_URL is not set', () => {
@@ -212,7 +214,7 @@ describe('createExpirationFlexMessage', () => {
     const result = createExpirationFlexMessage(medications);
     const footer = result.contents.footer.contents[0];
 
-    expect(footer.action.uri).toBe('https://your-app-url.com');
+    expect(footer.action.uri).toBe('https://your-app-url.com?search=Paracetamol&medicationId=1');
   });
 
   it('should format dates using Thai locale', () => {
@@ -344,5 +346,41 @@ describe('createExpirationFlexMessage', () => {
     expect(result.contents.body.layout).toBe('vertical');
     expect(result.contents.footer.type).toBe('box');
     expect(result.contents.footer.layout).toBe('vertical');
+  });
+
+  it('should create carousel with correct URIs for multiple medications', () => {
+    const category = createMockCategory('cat1', 'ยาแก้ปวด');
+    const medications = [
+      createMockMedication('1', 'Paracetamol', 'cat1', new Date('2024-01-10'), category),
+      createMockMedication('2', 'Ibuprofen', 'cat1', new Date('2024-01-15'), category),
+    ];
+
+    const result = createExpirationFlexMessage(medications);
+
+    // Should be a carousel
+    expect(result.contents.type).toBe('carousel');
+    expect(result.contents.contents).toHaveLength(2);
+
+    // Check first medication URI
+    const firstFooter = result.contents.contents[0].footer.contents[0];
+    expect(firstFooter.action.uri).toBe('https://test-app.com?search=Paracetamol&medicationId=1');
+
+    // Check second medication URI
+    const secondFooter = result.contents.contents[1].footer.contents[0];
+    expect(secondFooter.action.uri).toBe('https://test-app.com?search=Ibuprofen&medicationId=2');
+  });
+
+  it('should encode medication names with special characters in URI', () => {
+    const category = createMockCategory('cat1', 'ยาแก้ปวด');
+    const medications = [
+      createMockMedication('1', 'Medication & Drug+', 'cat1', new Date('2024-01-10'), category),
+    ];
+
+    const result = createExpirationFlexMessage(medications);
+    const footer = result.contents.footer.contents[0];
+
+    // URL should be properly encoded
+    expect(footer.action.uri).toContain('search=Medication%20%26%20Drug%2B');
+    expect(footer.action.uri).toContain('medicationId=1');
   });
 });

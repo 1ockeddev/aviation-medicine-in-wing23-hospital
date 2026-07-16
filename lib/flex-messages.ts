@@ -250,7 +250,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
             action: {
               type: 'uri',
               label: 'ดูรายละเอียดเพิ่มเติม',
-              uri: process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com',
+              uri: `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}?search=${encodeURIComponent(med.name)}&medicationId=${med.id}`,
             },
             color: '#007BFF',
           },
