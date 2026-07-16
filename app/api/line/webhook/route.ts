@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
     console.log('Webhook received', {
       operation,
       eventCount: events.length,
+      events: events.map((e: any) => ({ 
+        type: e.type, 
+        messageType: e.message?.type,
+        messageText: e.message?.text,
+        userId: e.source?.userId 
+      })),
       timestamp: new Date().toISOString(),
     });
 
@@ -131,6 +137,9 @@ async function handleMessageEvent(event: any) {
     userId,
     messageType: event.message.type,
     messageText,
+    messageTextTrimmed: messageText.trim(),
+    messageTextUpper: messageText.trim().toUpperCase(),
+    isPCommand: messageText.trim().toUpperCase() === 'P',
     timestamp: new Date().toISOString(),
   });
 
