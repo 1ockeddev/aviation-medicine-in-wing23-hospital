@@ -176,43 +176,86 @@ async function handleMessageEvent(event: any) {
 
   console.log('Checking if user exists in database', {
     userId,
+    hasPrisma: !!prisma,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
     timestamp: new Date().toISOString(),
   });
 
   // Check if user exists in database with timeout
-  let existingUser;
+  let existingUser = null;
   try {
-    existingUser = await Promise.race([
-      prisma.lineUser.findUnique({
-        where: { lineUserId: userId },
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 5000)
-      )
-    ]);
+    const queryPromise = prisma.lineUser.findUnique({
+      where: { lineUserId: userId },
+    });
+
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Database query timeout after 5s')), 5000)
+    );
+
+    existingUser = await Promise.race([queryPromise, timeoutPromise]);
 
     console.log('User check completed', {
       userId,
       userExists: !!existingUser,
+      userName: existingUser?.displayName,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error checking user', {
+    console.error('Error checking user in database', {
       userId,
       error: error instanceof Error ? error.message : 'Unknown error',
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      databaseUrlLength: process.env.DATABASE_URL?.length,
       timestamp: new Date().toISOString(),
     });
-    // Continue anyway
-    existingUser = null;
+    
+    // Continue without user data
+    console.log('Continuing without user check due to error');
   }
 
   // If user doesn't exist, register them
   if (!existingUser) {
-    const profile = await getUserProfile(userId);
-    if (profile) {
-      await upsertLineUser(profile);
+    console.log('User does not exist, registering', {
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
+    try {
+      const profile = await getUserProfile(userId);
+      if (profile) {
+        await upsertLineUser(profile);
+        console.log('User registered successfully', {
+          userId,
+          displayName: profile.displayName,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        console.error('Failed to get user profile', {
+          userId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error('Error registering user', {
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
     }
+  } else {
+    console.log('User already exists', {
+      userId,
+      displayName: existingUser.displayName,
+      timestamp: new Date().toISOString(),
+    });
   }
+
+  console.log('About to check P command', {
+    userId,
+    messageText,
+    isPCommand: messageText.trim().toUpperCase() === 'P',
+    timestamp: new Date().toISOString(),
+  });
 
   // Handle "P" command - send expiry notification
   if (messageText.trim().toUpperCase() === 'P') {
