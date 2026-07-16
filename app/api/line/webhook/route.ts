@@ -163,8 +163,16 @@ async function handleMessageEvent(event: any) {
       timestamp: new Date().toISOString(),
     });
 
-    // Send expiry notification
-    await sendExpiryNotificationToUser(userId);
+    try {
+      await sendExpiryNotificationToUser(userId);
+    } catch (error) {
+      console.error('Error in P command handler', {
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 }
 
@@ -172,8 +180,18 @@ async function handleMessageEvent(event: any) {
  * Send expiry notification to user
  */
 async function sendExpiryNotificationToUser(userId: string) {
+  console.log('sendExpiryNotificationToUser called', {
+    userId,
+    timestamp: new Date().toISOString(),
+  });
+
   try {
     // Import sendExpiryNotification function
+    console.log('Importing sendExpiryNotification', {
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
     const { sendExpiryNotification } = await import('@/lib/line-messaging');
 
     console.log('Sending expiry notification', {
@@ -183,6 +201,14 @@ async function sendExpiryNotificationToUser(userId: string) {
     });
 
     const result = await sendExpiryNotification(userId);
+
+    console.log('sendExpiryNotification result', {
+      userId,
+      success: result.success,
+      medicationCount: result.medicationCount,
+      error: result.error,
+      timestamp: new Date().toISOString(),
+    });
 
     if (result.success) {
       console.log('Expiry notification sent successfully', {
