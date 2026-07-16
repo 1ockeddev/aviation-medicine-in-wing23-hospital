@@ -107,7 +107,8 @@
       <label for="environment">Environment:</label>
       <select id="environment">
         <option value="local">Local (http://localhost:3000)</option>
-        <option value="production" selected>Production (Netlify)</option>
+        <option value="vercel" selected>Vercel (Production)</option>
+        <option value="netlify">Netlify (Production)</option>
       </select>
     </div>
 
@@ -142,10 +143,13 @@
       }
 
       // Determine endpoint URL
-      const baseUrl = environment === 'local' 
-        ? 'http://localhost:3000'
-        : 'https://aviation-medicine-in-wing23-hospital.netlify.app';
+      const urls = {
+        local: 'http://localhost:3000',
+        vercel: 'https://your-project.vercel.app', // Update this after deployment
+        netlify: 'https://aviation-medicine-in-wing23-hospital.netlify.app'
+      };
       
+      const baseUrl = urls[environment] || urls.local;
       const endpoint = `${baseUrl}/api/cron/check-expiry`;
 
       // Show loading state
