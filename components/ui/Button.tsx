@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
+  variant?: 'primary' | 'secondary' | 'danger' | 'warning' | 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -23,6 +23,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             // Danger variant (red for destructive actions)
             'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600': 
               variant === 'danger' || variant === 'destructive',
+            // Warning variant (orange/yellow for important actions)
+            'bg-orange-500 text-white hover:bg-orange-600 focus-visible:ring-orange-500': 
+              variant === 'warning',
             // Outline variant
             'border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-gray-500': 
               variant === 'outline',

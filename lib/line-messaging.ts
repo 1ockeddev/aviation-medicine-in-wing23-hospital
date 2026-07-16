@@ -104,6 +104,81 @@ export async function sendTestNotification(lineUserId: string): Promise<SendMess
 }
 
 /**
+ * Send expiry notification with real medication data
+ * @param lineUserId - LINE user ID to send notification to
+ * @returns Result object with success status, medication count, and optional error message
+ */
+export async function sendExpiryNotification(
+  lineUserId: string
+): Promise<SendMessageResult & { medicationCount?: number }> {
+  const operation = 'SEND_EXPIRY_NOTIFICATION';
+  
+  try {
+    // Import prisma and flex message utilities dynamically to avoid circular dependencies
+    const { prisma } = await import('@/lib/prisma');
+    const { createExpirationFlexMessage } = await import('@/lib/flex-messages');
+
+    // Get medications expiring within 30 days
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const medications = await prisma.medication.findMany({
+      where: {
+        expirationDate: {
+          lte: thirtyDaysFromNow,
+          gte: new Date(), // Only future dates
+        },
+      },
+      include: {
+        category: true,
+      },
+      orderBy: {
+        expirationDate: 'asc',
+      },
+    });
+
+    if (medications.length === 0) {
+      console.log('No medications expiring soon', {
+        operation,
+        userId: lineUserId,
+        timestamp: new Date().toISOString(),
+      });
+      
+      return {
+        success: false,
+        error: 'No medications found expiring soon',
+      };
+    }
+
+    // Create flex message with real medication data
+    const flexMessage = createExpirationFlexMessage(medications);
+
+    // Send the message
+    const result = await sendPushMessage(lineUserId, [flexMessage]);
+
+    return {
+      ...result,
+      medicationCount: medications.length,
+    };
+  } catch (error: any) {
+    const errorMessage = error.message || 'Failed to send expiry notification';
+
+    console.error('Expiry notification error', {
+      operation,
+      userId: lineUserId,
+      error: errorMessage,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
+/**
  * Create a test Flex Message template
  * @returns LINE Flex Message object for test notification
  */

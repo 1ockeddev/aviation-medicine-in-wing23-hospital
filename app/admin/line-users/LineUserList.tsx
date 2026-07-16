@@ -25,6 +25,7 @@ export function LineUserList({ lineUsers }: LineUserListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [testNotificationPending, setTestNotificationPending] = useState<string | null>(null);
+  const [expiryNotificationPending, setExpiryNotificationPending] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   
   const USERS_PER_PAGE = 20;
@@ -121,6 +122,47 @@ export function LineUserList({ lineUsers }: LineUserListProps) {
       setTimeout(() => setError(null), 5000);
     } finally {
       setTestNotificationPending(null);
+    }
+  };
+
+  // Send expiry notification with real medication data
+  const handleSendExpiryNotification = async (lineUserId: string, displayName: string) => {
+    setExpiryNotificationPending(lineUserId);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch('/api/line/send-expiry-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lineUserId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Show success message with medication count
+        const medicationCount = data.medicationCount || 0;
+        setSuccessMessage(
+          `ส่งการแจ้งเตือนยาใกล้หมดอายุ ${medicationCount} รายการถึง ${displayName} เรียบร้อยแล้ว`
+        );
+        setTimeout(() => setSuccessMessage(null), 4000);
+      } else {
+        // Show error message
+        if (response.status === 404) {
+          setError('ไม่พบยาที่ใกล้หมดอายุภายใน 30 วัน');
+        } else {
+          setError(data.error || 'ไม่สามารถส่งการแจ้งเตือนได้');
+        }
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (err) {
+      setError('เกิดข้อผิดพลาดในการส่งการแจ้งเตือน');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setExpiryNotificationPending(null);
     }
   };
 
@@ -242,31 +284,46 @@ export function LineUserList({ lineUsers }: LineUserListProps) {
                 </div>
 
                 {/* Action Buttons (Requirement 4.1, 4.3, 5.1) */}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEditClick(user)}
+                      className="text-xs px-2 py-1"
+                    >
+                      แก้ไข
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteClick(user.id, user.displayName)}
+                      className="text-xs px-2 py-1"
+                    >
+                      ลบ
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleSendTest(user.lineUserId, user.displayName)}
+                      disabled={testNotificationPending === user.lineUserId}
+                      className="text-xs px-2 py-1"
+                    >
+                      {testNotificationPending === user.lineUserId ? 'กำลังส่ง...' : 'ทดสอบ'}
+                    </Button>
+                  </div>
+                  
+                  {/* Send Real Expiry Notification Button */}
                   <Button
-                    variant="secondary"
+                    variant="warning"
                     size="sm"
-                    onClick={() => handleEditClick(user)}
-                    className="text-xs px-2 py-1"
+                    onClick={() => handleSendExpiryNotification(user.lineUserId, user.displayName)}
+                    disabled={expiryNotificationPending === user.lineUserId}
+                    className="text-xs px-2 py-1 w-full"
                   >
-                    แก้ไข
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDeleteClick(user.id, user.displayName)}
-                    className="text-xs px-2 py-1"
-                  >
-                    ลบ
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleSendTest(user.lineUserId, user.displayName)}
-                    disabled={testNotificationPending === user.lineUserId}
-                    className="text-xs px-2 py-1"
-                  >
-                    {testNotificationPending === user.lineUserId ? 'กำลังส่ง...' : 'ทดสอบ'}
+                    {expiryNotificationPending === user.lineUserId 
+                      ? 'กำลังส่ง...' 
+                      : '📋 ส่งรายการยาใกล้หมดอายุ'}
                   </Button>
                 </div>
               </div>
