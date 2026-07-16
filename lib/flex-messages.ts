@@ -68,7 +68,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
     const categoryParts = categoryPath.split(' > ');
     
     // Build category boxes with different background colors for hierarchy
-    const categoryBoxes = [];
+    const categoryBoxes: any[] = [];
     const bgColors = ['#FFF2CC', '#FFF9E6', '#FFFCF5'];
     const textColors = ['#222222', '#444444', '#666666'];
     const paddings = ['10px', '10px', '10px'];
