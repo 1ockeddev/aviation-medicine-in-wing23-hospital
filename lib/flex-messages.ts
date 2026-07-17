@@ -91,7 +91,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
       },
       // Level 2 (Child) - Soft Gray background
       {
-        backgroundColor: '#ddebf4', // USER_COLORS.softGray
+        backgroundColor: '#bdd9e9', // USER_COLORS.softGray
         textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
@@ -107,7 +107,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
       },
       // Level 4+ (Great-grandchild) - Soft Blue Gradient Medium
       {
-        backgroundColor: '#bdd9e9', // USER_COLORS.softBlueGradient.medium
+        backgroundColor: '#ddebf4', // USER_COLORS.softBlueGradient.medium
         textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
