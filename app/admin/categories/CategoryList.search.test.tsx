@@ -45,7 +45,7 @@ describe('CategoryList Search State Management', () => {
           } else {
             restoreSnapshot();
           }
-        }, [searchQuery]);
+        }); // No dependency array needed - searchQuery is a constant in test
       });
 
       // Verify saveSnapshot was called
@@ -80,7 +80,7 @@ describe('CategoryList Search State Management', () => {
           } else {
             restoreSnapshot();
           }
-        }, [searchQuery]);
+        }); // No dependency array needed - searchQuery is a constant in test
       });
 
       // Verify restoreSnapshot was called
@@ -115,7 +115,7 @@ describe('CategoryList Search State Management', () => {
           } else {
             restoreSnapshot();
           }
-        }, [searchQuery]);
+        }); // No dependency array needed - searchQuery is a constant in test
       });
 
       // Verify restoreSnapshot was called (because trim() makes it empty)
@@ -192,7 +192,7 @@ describe('CategoryList Search State Management', () => {
           } else {
             restoreSnapshot();
           }
-        }, [searchQuery]);
+        }); // No dependency array needed - searchQuery is a constant in test
       });
 
       // Verify saveSnapshot was called
