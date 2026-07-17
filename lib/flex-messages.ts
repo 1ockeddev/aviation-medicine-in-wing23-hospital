@@ -83,7 +83,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
     const levelSettings = [
       // Level 1 (Root/Parent) - Ice Blue background
       {
-        backgroundColor: '#ddebf4', // USER_COLORS.iceBlue
+        backgroundColor: '#8fbed9', // USER_COLORS.iceBlue
         textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
@@ -91,7 +91,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
       },
       // Level 2 (Child) - Soft Gray background
       {
-        backgroundColor: '#d1e4f0', // USER_COLORS.softGray
+        backgroundColor: '#ddebf4', // USER_COLORS.softGray
         textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
@@ -99,18 +99,18 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
       },
       // Level 3 (Grandchild) - Soft Blue Gradient Light
       {
-        backgroundColor: '#bdd9e9', // USER_COLORS.softBlueGradient.lighter
+        backgroundColor: '#d1e4f0', // USER_COLORS.softBlueGradient.lighter
         textColor: '#232e49',       // USER_COLORS.navyBlue
-        fontSize: 'xs',
-        weight: 'regular',
+        fontSize: 'sm',
+        weight: 'bold',
         paddingStart: '44px',
       },
       // Level 4+ (Great-grandchild) - Soft Blue Gradient Medium
       {
-        backgroundColor: '#8fbed9', // USER_COLORS.softBlueGradient.medium
+        backgroundColor: '#bdd9e9', // USER_COLORS.softBlueGradient.medium
         textColor: '#232e49',       // USER_COLORS.navyBlue
-        fontSize: 'xs',
-        weight: 'regular',
+        fontSize: 'sm',
+        weight: 'bold',
         paddingStart: '60px',
       },
     ];
@@ -148,11 +148,12 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
         paddingAll: 'none',
         contents: [
           {
-            type: 'image',
-            url: 'https://images.pexels.com/photos/8855516/pexels-photo-8855516.jpeg',
-            size: 'full',
-            aspectMode: 'cover',
-            aspectRatio: '5.3:1',
+            "type": "image",
+            "url": "https://scontent.fbkk22-2.fna.fbcdn.net/v/t39.30808-6/723556858_1312004427773591_5904567144064977670_n.jpg?stp=dst-jpg_tt6&cstp=mx992x992&ctp=s992x992&_nc_cat=100&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeE3K8FG0w1TdSR3kjk7hWURqqELS64hYIaqoQtLriFghh-l9Zg-DhtTFd2VqjqyR4f5Hxq8QqImWa-gZ7I4yOH2&_nc_ohc=qphPj2nUS5AQ7kNvwHP79kw&_nc_oc=AdrGNcUd_lgKltIfZp5XZoXJXZauhcV3tgOepFKvZOBpqt1-bRu3ra6lrpKVevjS2Cc&_nc_zt=23&_nc_ht=scontent.fbkk22-2.fna&_nc_gid=4-jguDI_ZhdHZAGbjvAMCg&_nc_ss=7b2a8&oh=00_AQA87BCeZH4_YUeg0cUY8_AqLdX6aHg7UqWC5IWS-8GCGA&oe=6A5F9EEB",
+            "size": "full",
+            "aspectMode": "fit",
+            "aspectRatio": "3:1",
+            "offsetStart": "-30%"
           },
         ],
       },
@@ -167,7 +168,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
             contents: [
               {
                 type: 'icon',
-                url: 'https://www.svgrepo.com/show/402496/police-car-light.svg',
+                url: 'https://www.pngfind.com/pngs/m/303-3037740_police-car-light-emoji-icon-police-car-light.png',
               },
               {
                 type: 'text',
