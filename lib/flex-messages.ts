@@ -5,6 +5,14 @@ import type { Medication, Category } from '@prisma/client';
  * 
  * This module provides helper functions for calculating expiration-related
  * information and formatting dates in Thai locale for LINE Flex Messages.
+ * 
+ * Color Scheme (matching web UI):
+ * - Navy Blue (#232e49): Text color for categories
+ * - Medium Blue (#61a4ca): Primary buttons and accents
+ * - Ice Blue (#ddebf4): Level 1 category background
+ * - Soft Gray (#d1e4f0): Level 2 category background
+ * - Soft Blue Gradient Lighter (#bdd9e9): Level 3 category background
+ * - Soft Blue Gradient Medium (#8fbed9): Level 4+ category background
  */
 
 type MedicationWithCategory = Medication & { category: Category };
@@ -68,45 +76,42 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
     const categoryParts = categoryPath.split(' > ');
     
     // Build category boxes with improved visual hierarchy
+    // Using the same color scheme as web UI for consistency
     const categoryBoxes: any[] = [];
     
-    // Visual hierarchy settings for each level
+    // Visual hierarchy settings for each level (matching web UI colors)
     const levelSettings = [
-      // Level 1 (Root/Parent)
+      // Level 1 (Root/Parent) - Ice Blue background
       {
-        backgroundColor: '#E8F4F8',
-        textColor: '#0C5460',
+        backgroundColor: '#ddebf4', // USER_COLORS.iceBlue
+        textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
         paddingStart: '12px',
-        icon: '📁',
       },
-      // Level 2 (Child)
+      // Level 2 (Child) - Soft Gray background
       {
-        backgroundColor: '#FFF3CD',
-        textColor: '#856404',
+        backgroundColor: '#d1e4f0', // USER_COLORS.softGray
+        textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'sm',
         weight: 'bold',
         paddingStart: '28px',
-        icon: '📂',
       },
-      // Level 3 (Grandchild)
+      // Level 3 (Grandchild) - Soft Blue Gradient Light
       {
-        backgroundColor: '#D1ECF1',
-        textColor: '#0C5460',
+        backgroundColor: '#bdd9e9', // USER_COLORS.softBlueGradient.lighter
+        textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'xs',
         weight: 'regular',
         paddingStart: '44px',
-        icon: '📄',
       },
-      // Level 4+ (Great-grandchild)
+      // Level 4+ (Great-grandchild) - Soft Blue Gradient Medium
       {
-        backgroundColor: '#F8F9FA',
-        textColor: '#6C757D',
+        backgroundColor: '#8fbed9', // USER_COLORS.softBlueGradient.medium
+        textColor: '#232e49',       // USER_COLORS.navyBlue
         fontSize: 'xs',
         weight: 'regular',
         paddingStart: '60px',
-        icon: '▪️',
       },
     ];
     
@@ -115,20 +120,13 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
       
       categoryBoxes.push({
         type: 'box',
-        layout: 'horizontal',
+        layout: 'vertical',
         backgroundColor: settings.backgroundColor,
         paddingAll: '8px',
         paddingStart: settings.paddingStart,
         cornerRadius: '6px',
         margin: index === 0 ? 'md' : 'xs',
-        spacing: 'xs',
         contents: [
-          {
-            type: 'text',
-            text: settings.icon,
-            size: 'xs',
-            flex: 0,
-          },
           {
             type: 'text',
             text: part.trim(),
@@ -136,7 +134,6 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
             color: settings.textColor,
             weight: settings.weight,
             wrap: true,
-            flex: 1,
           },
         ],
       });
@@ -297,7 +294,7 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
               label: 'ดูรายละเอียดเพิ่มเติม',
               uri: `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}?search=${encodeURIComponent(med.name)}&medicationId=${med.id}`,
             },
-            color: '#007BFF',
+            color: '#61a4ca', // USER_COLORS.mediumBlue - matching web UI
           },
         ],
         paddingAll: '16px',

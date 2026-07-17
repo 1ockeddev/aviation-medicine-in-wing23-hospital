@@ -81,30 +81,34 @@ const fullPath = ancestors.map(c => c.name).join(' > ');
 
 ### 3. Improved Visual Hierarchy in Flex Messages
 
-แก้ไข UI ของ Flex Message ให้แสดง category levels อย่างชัดเจนและสวยงามขึ้น:
+แก้ไข UI ของ Flex Message ให้แสดง category levels อย่างชัดเจนและใช้โทนสีเดียวกับหน้า web index:
+
+**Color Scheme (matching web UI):**
+- **Text Color**: Navy Blue (#232e49) - ใช้สำหรับข้อความหมวดหมู่ทุก level
+- **Button Color**: Medium Blue (#61a4ca) - ปุ่ม "ดูรายละเอียดเพิ่มเติม"
 
 **Level 1 (Root/Parent)**
 - 📁 Icon
-- Background: #E8F4F8 (ฟ้าอ่อน)
-- Text: #0C5460 (bold, sm)
+- Background: #ddebf4 (Ice Blue - เหมือนพื้นหลังหน้าเว็บ)
+- Text: #232e49 (Navy Blue, bold, sm)
 - Padding start: 12px
 
 **Level 2 (Child)**
 - 📂 Icon
-- Background: #FFF3CD (เหลืองอ่อน)
-- Text: #856404 (bold, sm)
+- Background: #d1e4f0 (Soft Gray - สลับสีจาก level 1)
+- Text: #232e49 (Navy Blue, bold, sm)
 - Padding start: 28px (เยื้องขวา)
 
 **Level 3 (Grandchild)**
 - 📄 Icon
-- Background: #D1ECF1 (ฟ้าอ่อน)
-- Text: #0C5460 (regular, xs)
+- Background: #bdd9e9 (Soft Blue Gradient Lighter - โทนฟ้าอ่อน)
+- Text: #232e49 (Navy Blue, regular, xs)
 - Padding start: 44px (เยื้องขวามากขึ้น)
 
 **Level 4+ (Great-grandchild)**
 - ▪️ Icon
-- Background: #F8F9FA (เทาอ่อน)
-- Text: #6C757D (regular, xs)
+- Background: #8fbed9 (Soft Blue Gradient Medium - โทนฟ้ากลาง)
+- Text: #232e49 (Navy Blue, regular, xs)
 - Padding start: 60px (เยื้องขวาสุด)
 
 ## 📁 Files Created/Modified
@@ -203,6 +207,40 @@ Category: "Oral Forms"  ❌ (แสดงแค่ level สุดท้าย)
 - เยื้อง padding เพิ่มตาม level
 - Bold สำหรับ level บน, regular สำหรับ level ล่าง
 - Box layout แยกแต่ละ level ชัดเจน
+- **ใช้โทนสีเดียวกับ web UI** (Navy Blue, Ice Blue, Soft Gray, Soft Blue Gradient)
+
+## 🎨 Color Scheme (matching web UI)
+
+Flex Message ใช้โทนสีเดียวกับหน้า web index เพื่อความสอดคล้องและ professional:
+
+### Web UI Color Constants
+```typescript
+// From /lib/user-colors.ts
+navyBlue: '#232e49'        // Category text
+mediumBlue: '#61a4ca'      // Buttons and icons
+iceBlue: '#ddebf4'         // Primary background
+softGray: '#d1e4f0'        // Alternate background
+softBlueGradient: {
+  lighter: '#bdd9e9'       // Level 3 background
+  medium: '#8fbed9'        // Level 4 background
+}
+```
+
+### Flex Message Color Mapping
+```
+Level 1: Ice Blue (#ddebf4)     <- พื้นหลังหลัก
+Level 2: Soft Gray (#d1e4f0)    <- สลับสี
+Level 3: Soft Blue (#bdd9e9)    <- โทนฟ้าอ่อน
+Level 4: Soft Blue (#8fbed9)    <- โทนฟ้ากลาง
+Text: Navy Blue (#232e49)       <- ข้อความทุก level
+Button: Medium Blue (#61a4ca)   <- ปุ่ม "ดูรายละเอียดเพิ่มเติม"
+```
+
+**Benefits:**
+- ✅ UI สอดคล้องกันระหว่าง LINE และ Web
+- ✅ ผู้ใช้จำสีและ brand ได้ง่าย
+- ✅ Professional และ cohesive design
+- ✅ โทนสีฟ้า-น้ำเงินให้ความรู้สึกเชื่อถือได้และสะอาด
 
 ## 🎨 LINE Flex Message Simulator
 
