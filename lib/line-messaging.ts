@@ -115,12 +115,40 @@ export async function sendExpiryNotification(
   
   try {
     // Import prisma and flex message utilities dynamically to avoid circular dependencies
+    console.log('Importing prisma and flex utilities', {
+      operation,
+      userId: lineUserId,
+      timestamp: new Date().toISOString(),
+    });
+    
     const { prisma } = await import('@/lib/prisma');
     const { createExpirationFlexMessage } = await import('@/lib/flex-messages');
+
+    console.log('Imports successful, querying medications', {
+      operation,
+      userId: lineUserId,
+      timestamp: new Date().toISOString(),
+    });
 
     // Get medications expiring within 30 days
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    console.log('Date range calculated', {
+      operation,
+      userId: lineUserId,
+      now: new Date().toISOString(),
+      thirtyDaysFromNow: thirtyDaysFromNow.toISOString(),
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log('Starting database query for medications', {
+      operation,
+      userId: lineUserId,
+      hasPrisma: !!prisma,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      timestamp: new Date().toISOString(),
+    });
 
     const medications = await prisma.medication.findMany({
       where: {
@@ -130,17 +158,40 @@ export async function sendExpiryNotification(
         },
       },
       include: {
-        category: true,
+        category: {
+          include: {
+            parent: {
+              include: {
+                parent: {
+                  include: {
+                    parent: true, // Support up to 4 levels deep
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: {
         expirationDate: 'asc',
       },
     });
 
+    console.log('Database query completed', {
+      operation,
+      userId: lineUserId,
+      medicationCount: medications.length,
+      timestamp: new Date().toISOString(),
+    });
+
     if (medications.length === 0) {
       console.log('No medications expiring soon', {
         operation,
         userId: lineUserId,
+        dateRangeChecked: {
+          from: new Date().toISOString(),
+          to: thirtyDaysFromNow.toISOString(),
+        },
         timestamp: new Date().toISOString(),
       });
       
@@ -150,8 +201,49 @@ export async function sendExpiryNotification(
       };
     }
 
+    console.log('Creating flex message', {
+      operation,
+      userId: lineUserId,
+      medicationCount: medications.length,
+      medications: medications.map(m => ({
+        name: m.name,
+        expirationDate: m.expirationDate?.toISOString(),
+      })),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Build full category hierarchy path for each medication
+    const medicationsWithFullPath = medications.map(med => {
+      // Build category path from root to leaf
+      const ancestors: any[] = [];
+      let currentCategory: any = med.category;
+      
+      // Traverse up to root
+      while (currentCategory) {
+        ancestors.unshift(currentCategory); // Add to beginning
+        currentCategory = currentCategory.parent;
+      }
+      
+      // Build full path string
+      const fullPath = ancestors.map(c => c.name).join(' > ');
+      
+      return {
+        ...med,
+        category: {
+          ...med.category,
+          name: fullPath, // Override name with full path
+        },
+      };
+    });
+
     // Create flex message with real medication data
-    const flexMessage = createExpirationFlexMessage(medications);
+    const flexMessage = createExpirationFlexMessage(medicationsWithFullPath as any);
+
+    console.log('Flex message created, sending push message', {
+      operation,
+      userId: lineUserId,
+      timestamp: new Date().toISOString(),
+    });
 
     // Send the message
     const result = await sendPushMessage(lineUserId, [flexMessage]);

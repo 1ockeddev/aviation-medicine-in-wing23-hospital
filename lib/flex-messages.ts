@@ -67,31 +67,76 @@ export function createExpirationFlexMessage(medications: MedicationWithCategory[
     const categoryPath = med.category.name;
     const categoryParts = categoryPath.split(' > ');
     
-    // Build category boxes with different background colors for hierarchy
+    // Build category boxes with improved visual hierarchy
     const categoryBoxes: any[] = [];
-    const bgColors = ['#FFF2CC', '#FFF9E6', '#FFFCF5'];
-    const textColors = ['#222222', '#444444', '#666666'];
-    const paddings = ['10px', '10px', '10px'];
-    const paddingStarts = ['10px', '24px', '44px'];
+    
+    // Visual hierarchy settings for each level
+    const levelSettings = [
+      // Level 1 (Root/Parent)
+      {
+        backgroundColor: '#E8F4F8',
+        textColor: '#0C5460',
+        fontSize: 'sm',
+        weight: 'bold',
+        paddingStart: '12px',
+        icon: '📁',
+      },
+      // Level 2 (Child)
+      {
+        backgroundColor: '#FFF3CD',
+        textColor: '#856404',
+        fontSize: 'sm',
+        weight: 'bold',
+        paddingStart: '28px',
+        icon: '📂',
+      },
+      // Level 3 (Grandchild)
+      {
+        backgroundColor: '#D1ECF1',
+        textColor: '#0C5460',
+        fontSize: 'xs',
+        weight: 'regular',
+        paddingStart: '44px',
+        icon: '📄',
+      },
+      // Level 4+ (Great-grandchild)
+      {
+        backgroundColor: '#F8F9FA',
+        textColor: '#6C757D',
+        fontSize: 'xs',
+        weight: 'regular',
+        paddingStart: '60px',
+        icon: '▪️',
+      },
+    ];
     
     categoryParts.forEach((part, index) => {
+      const settings = levelSettings[index] || levelSettings[levelSettings.length - 1];
+      
       categoryBoxes.push({
         type: 'box',
-        layout: 'vertical',
-        backgroundColor: bgColors[index] || '#FFFCF5',
-        paddingAll: paddings[index],
-        paddingStart: paddingStarts[index],
+        layout: 'horizontal',
+        backgroundColor: settings.backgroundColor,
+        paddingAll: '8px',
+        paddingStart: settings.paddingStart,
         cornerRadius: '6px',
-        margin: 'xs',
+        margin: index === 0 ? 'md' : 'xs',
+        spacing: 'xs',
         contents: [
           {
             type: 'text',
-            text: part,
+            text: settings.icon,
             size: 'xs',
-            color: textColors[index] || '#666666',
-            weight: index === 0 ? 'bold' : 'regular',
+            flex: 0,
+          },
+          {
+            type: 'text',
+            text: part.trim(),
+            size: settings.fontSize,
+            color: settings.textColor,
+            weight: settings.weight,
             wrap: true,
-            lineSpacing: '2px',
+            flex: 1,
           },
         ],
       });
