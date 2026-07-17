@@ -20,6 +20,11 @@ const navItems = [
     href: '/admin/line-users',
     icon: '👥',
   },
+  {
+    label: 'ฐานข้อมูล',
+    href: '/admin/database',
+    icon: '💾',
+  },
 ];
 
 interface NavigationProps {
