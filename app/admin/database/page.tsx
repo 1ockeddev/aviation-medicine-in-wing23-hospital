@@ -235,7 +235,7 @@ export default function DatabaseManagementPage() {
           <div>
             <p className="font-medium">Export Database:</p>
             <ol className="list-decimal list-inside mt-1 space-y-1 ml-4">
-              <li>คลิกปุ่ม "Export Database"</li>
+              <li>คลิกปุ่ม &quot;Export Database&quot;</li>
               <li>ระบบจะดาวน์โหลดไฟล์ JSON อัตโนมัติ</li>
               <li>เก็บไฟล์ไว้สำหรับ backup หรือย้ายข้อมูล</li>
             </ol>
@@ -243,7 +243,7 @@ export default function DatabaseManagementPage() {
           <div>
             <p className="font-medium">Import Database:</p>
             <ol className="list-decimal list-inside mt-1 space-y-1 ml-4">
-              <li>คลิกปุ่ม "Import Database"</li>
+              <li>คลิกปุ่ม &quot;Import Database&quot;</li>
               <li>เลือกไฟล์ JSON ที่ export ไว้</li>
               <li>ยืนยันการ import (ข้อมูลเดิมจะถูกลบ)</li>
               <li>รอให้ระบบ import เสร็จ</li>
