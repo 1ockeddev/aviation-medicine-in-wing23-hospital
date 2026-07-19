@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { sendPushMessage } from './line-messaging';
-import { createExpirationFlexMessage } from './flex-messages';
+import { sendExpiryNotification } from './line-messaging';
 
 /**
  * Result object returned from notification check operation
@@ -15,14 +14,10 @@ interface NotificationResult {
  * 
  * This function:
  * 1. Queries all LineUsers with notificationsEnabled = true
- * 2. For each user, calculates threshold date using daysBeforeExpiration
- * 3. Queries medications where expirationDate is between now and threshold date
- * 4. Filters medications with status 'Y' or 'Y*' (active only)
- * 5. Sorts medications by expirationDate ascending
- * 6. Generates Flex Message using createExpirationFlexMessage
- * 7. Sends notification using sendPushMessage
- * 8. Logs start time, end time, and notification count
- * 9. Handles errors per user (continues processing if one fails)
+ * 2. For each user, calls sendExpiryNotification() to send Flex Message
+ * 3. Uses the SAME function as the manual "Send Expiry Notification" button
+ * 4. Logs start time, end time, and notification count
+ * 5. Handles errors per user (continues processing if one fails)
  * 
  * @returns NotificationResult with count of notifications sent and duration in ms
  * 
@@ -52,71 +47,36 @@ export async function checkAndNotifyExpiringMedications(): Promise<NotificationR
 
     for (const user of users) {
       try {
-        // Calculate threshold date
-        const now = new Date();
-        const thresholdDate = new Date();
-        thresholdDate.setDate(thresholdDate.getDate() + user.daysBeforeExpiration);
-
         console.log('Processing user notifications', {
           operation,
           userId: user.lineUserId,
           displayName: user.displayName,
           daysBeforeExpiration: user.daysBeforeExpiration,
-          thresholdDate: thresholdDate.toISOString(),
           timestamp: new Date().toISOString(),
         });
 
-        // Find expiring medications
-        const expiringMedications = await prisma.medication.findMany({
-          where: {
-            expirationDate: {
-              gte: now,
-              lte: thresholdDate,
-            },
-            status: {
-              in: ['Y', 'Y*'], // Only active medications
-            },
-          },
-          include: {
-            category: true,
-          },
-          orderBy: {
-            expirationDate: 'asc',
-          },
-        });
+        // Use the SAME function as the manual button
+        // This ensures consistent behavior between cron job and manual send
+        const result = await sendExpiryNotification(user.lineUserId);
 
-        console.log('Found expiring medications', {
-          operation,
-          userId: user.lineUserId,
-          displayName: user.displayName,
-          medicationCount: expiringMedications.length,
-          timestamp: new Date().toISOString(),
-        });
-
-        // Send notification if there are expiring medications
-        if (expiringMedications.length > 0) {
-          const flexMessage = createExpirationFlexMessage(expiringMedications);
-          const result = await sendPushMessage(user.lineUserId, [flexMessage]);
-
-          if (result.success) {
-            notificationCount++;
-            console.log('Notification sent successfully', {
-              operation,
-              userId: user.lineUserId,
-              displayName: user.displayName,
-              medicationCount: expiringMedications.length,
-              timestamp: new Date().toISOString(),
-            });
-          } else {
-            // Log notification failure (Requirement 12.5 - continue processing)
-            console.error('Failed to send notification', {
-              operation,
-              userId: user.lineUserId,
-              displayName: user.displayName,
-              error: result.error,
-              timestamp: new Date().toISOString(),
-            });
-          }
+        if (result.success) {
+          notificationCount++;
+          console.log('Notification sent successfully', {
+            operation,
+            userId: user.lineUserId,
+            displayName: user.displayName,
+            medicationCount: result.medicationCount,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          // Log notification failure (Requirement 12.5 - continue processing)
+          console.log('No medications to notify', {
+            operation,
+            userId: user.lineUserId,
+            displayName: user.displayName,
+            error: result.error,
+            timestamp: new Date().toISOString(),
+          });
         }
       } catch (error: any) {
         // Log critical error per user (Requirement 12.5 - continue processing remaining users)
