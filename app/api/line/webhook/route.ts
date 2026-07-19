@@ -159,6 +159,8 @@ async function handleFollowEvent(event: any) {
 
 /**
  * Handle message event - user sends message
+ * 
+ * Automatically registers new users when they send their first message
  */
 async function handleMessageEvent(event: any) {
   const userId = event.source.userId;
@@ -168,164 +170,41 @@ async function handleMessageEvent(event: any) {
     userId,
     messageType: event.message.type,
     messageText,
-    messageTextTrimmed: messageText.trim(),
-    messageTextUpper: messageText.trim().toUpperCase(),
-    isPCommand: messageText.trim().toUpperCase() === 'P',
     timestamp: new Date().toISOString(),
   });
 
-  console.log('Checking if user exists in database', {
-    userId,
-    hasPrisma: !!prisma,
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
-    timestamp: new Date().toISOString(),
-  });
+  // Check if user exists and register if needed
+  try {
+    const user = await prisma.lineUser.findUnique({
+      where: { lineUserId: userId },
+    });
 
-  // Start user check in background (don't await)
-  // We want to handle P command immediately even if DB is slow
-  const userCheckPromise = (async () => {
-    try {
-      const queryPromise = prisma.lineUser.findUnique({
-        where: { lineUserId: userId },
-      });
-
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout after 5s')), 5000)
-      );
-
-      const user = await Promise.race([queryPromise, timeoutPromise]);
-
-      console.log('User check completed', {
+    if (!user) {
+      console.log('New user detected, registering', {
         userId,
-        userExists: !!user,
-        userName: user?.displayName,
         timestamp: new Date().toISOString(),
       });
 
-      // If user doesn't exist, register them (in background)
-      if (!user) {
-        console.log('User does not exist, registering in background', {
+      const profile = await getUserProfile(userId);
+      if (profile) {
+        await upsertLineUser(profile);
+        console.log('User registered successfully', {
           userId,
-          timestamp: new Date().toISOString(),
-        });
-
-        const profile = await getUserProfile(userId);
-        if (profile) {
-          await upsertLineUser(profile);
-          console.log('User registered successfully', {
-            userId,
-            displayName: profile.displayName,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      } else {
-        console.log('User already exists', {
-          userId,
-          displayName: user.displayName,
+          displayName: profile.displayName,
           timestamp: new Date().toISOString(),
         });
       }
-    } catch (error) {
-      console.error('Error in user check/registration', {
-        userId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        hasDatabaseUrl: !!process.env.DATABASE_URL,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  })();
-
-  // Don't await user check - continue immediately to handle commands
-  console.log('Proceeding to command handling (user check in background)', {
-    userId,
-    timestamp: new Date().toISOString(),
-  });
-
-  console.log('About to check P command', {
-    userId,
-    messageText,
-    isPCommand: messageText.trim().toUpperCase() === 'P',
-    timestamp: new Date().toISOString(),
-  });
-
-  // Handle "P" command - send expiry notification
-  // NOTE: We process P command regardless of user registration status
-  // to ensure users can still get medication info even if DB is slow
-  if (messageText.trim().toUpperCase() === 'P') {
-    console.log('P command received', {
-      userId,
-      timestamp: new Date().toISOString(),
-    });
-
-    try {
-      await sendExpiryNotificationToUser(userId);
-      console.log('P command completed successfully', {
-        userId,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error('Error in P command handler', {
-        userId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
-}
-
-/**
- * Send expiry notification to user
- */
-async function sendExpiryNotificationToUser(userId: string) {
-  console.log('sendExpiryNotificationToUser called', {
-    userId,
-    timestamp: new Date().toISOString(),
-  });
-
-  try {
-    // Import sendExpiryNotification function
-    console.log('Importing sendExpiryNotification', {
-      userId,
-      timestamp: new Date().toISOString(),
-    });
-
-    const { sendExpiryNotification } = await import('@/lib/line-messaging');
-
-    console.log('Sending expiry notification', {
-      userId,
-      source: 'webhook_command',
-      timestamp: new Date().toISOString(),
-    });
-
-    const result = await sendExpiryNotification(userId);
-
-    console.log('sendExpiryNotification result', {
-      userId,
-      success: result.success,
-      medicationCount: result.medicationCount,
-      error: result.error,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (result.success) {
-      console.log('Expiry notification sent successfully', {
-        userId,
-        medicationCount: result.medicationCount,
-        timestamp: new Date().toISOString(),
-      });
     } else {
-      console.error('Failed to send expiry notification', {
+      console.log('User already exists', {
         userId,
-        error: result.error,
+        displayName: user.displayName,
         timestamp: new Date().toISOString(),
       });
     }
   } catch (error) {
-    console.error('Error sending expiry notification', {
+    console.error('Error in user check/registration', {
       userId,
       error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
     });
   }
