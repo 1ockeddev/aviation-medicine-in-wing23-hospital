@@ -52,17 +52,19 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
-    // Process events asynchronously (don't await)
-    // LINE requires response within 3 seconds, so we process in background
-    processEventsAsync(events).catch((error) => {
-      console.error('Background event processing error', {
+    // Process events synchronously (await to ensure completion)
+    // LINE requires response within 3 seconds, but we need to ensure DB writes complete
+    try {
+      await processEventsAsync(events);
+    } catch (error) {
+      console.error('Event processing error', {
         operation,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       });
-    });
+    }
 
-    // Return immediately to LINE (must be 200 OK)
+    // Return 200 OK to LINE
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Webhook error', {
