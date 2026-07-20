@@ -80,6 +80,11 @@ export default function DatabaseManagementPage() {
       const text = await file.text();
       const importData = JSON.parse(text);
 
+      console.log('Importing data:', {
+        metadata: importData.metadata,
+        counts: importData.counts,
+      });
+
       // Send to import API
       const response = await fetch('/api/admin/database/import', {
         method: 'POST',
@@ -91,8 +96,25 @@ export default function DatabaseManagementPage() {
 
       const result = await response.json();
 
+      console.log('Import API response:', {
+        status: response.status,
+        ok: response.ok,
+        result,
+      });
+
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to import database');
+        // Show detailed error from API
+        const errorMessage = result.details 
+          ? `${result.error}: ${result.details}`
+          : result.error || 'Failed to import database';
+        
+        console.error('Import failed:', {
+          status: response.status,
+          error: result.error,
+          details: result.details,
+        });
+        
+        throw new Error(errorMessage);
       }
 
       setImportResult(result);
@@ -107,9 +129,16 @@ export default function DatabaseManagementPage() {
       }, 2000);
     } catch (error) {
       console.error('Import error:', error);
+      
+      // Extract more specific error message
+      let errorMessage = 'Failed to import database';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to import database',
+        text: errorMessage,
       });
     } finally {
       setIsImporting(false);
@@ -148,6 +177,30 @@ export default function DatabaseManagementPage() {
             <li>✅ Medications: {importResult.imported.medicationsImported}</li>
             <li>✅ LINE Users: {importResult.imported.lineUsersImported}</li>
           </ul>
+          
+          {/* Show warnings if categories were reparented */}
+          {importResult.imported.categoriesReparented > 0 && (
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>{importResult.imported.categoriesReparented} categories</strong> had missing parent categories and were moved to root level.
+              </p>
+              {importResult.imported.orphanedCategories && importResult.imported.orphanedCategories.length > 0 && (
+                <details className="mt-2 text-xs text-yellow-700">
+                  <summary className="cursor-pointer hover:text-yellow-900">
+                    View reparented categories ({importResult.imported.orphanedCategories.length})
+                  </summary>
+                  <ul className="mt-2 space-y-1 ml-4 list-disc">
+                    {importResult.imported.orphanedCategories.map((cat: any) => (
+                      <li key={cat.id}>
+                        {cat.name} <span className="text-yellow-600">(missing parent: {cat.missingParentId.substring(0, 8)}...)</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
+          
           {importResult.metadata && (
             <p className="text-xs text-blue-600 mt-2">
               Exported by: {importResult.metadata.exportedBy} on {new Date(importResult.metadata.exportedAt).toLocaleString('th-TH')}

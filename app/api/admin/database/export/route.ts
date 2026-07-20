@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Export all data
     const [
       users,
-      categories,
+      allCategories,
       medications,
       lineUsers,
     ] = await Promise.all([
@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
           // Exclude password for security
         },
       }),
+      // Get ALL categories (including parents)
       prisma.category.findMany({
         orderBy: { order: 'asc' },
       }),
@@ -55,6 +56,16 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    console.log('Data fetched', {
+      operation,
+      counts: {
+        users: users.length,
+        categories: allCategories.length,
+        medications: medications.length,
+        lineUsers: lineUsers.length,
+      },
+    });
+
     const exportData = {
       metadata: {
         exportedAt: new Date().toISOString(),
@@ -64,13 +75,13 @@ export async function GET(request: NextRequest) {
       },
       data: {
         users,
-        categories,
+        categories: allCategories,
         medications,
         lineUsers,
       },
       counts: {
         users: users.length,
-        categories: categories.length,
+        categories: allCategories.length,
         medications: medications.length,
         lineUsers: lineUsers.length,
       },
