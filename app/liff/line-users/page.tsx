@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { 
-  SpinnerIcon, 
   UsersIcon, 
-  ArrowLeftIcon, 
   UserIcon,
   BellIcon,
   BellOffIcon,
@@ -14,6 +12,7 @@ import {
   InfoIcon,
   AlertIcon
 } from '@/components/icons/LiffIcons';
+import LoadingScreen from '@/components/liff/LoadingScreen';
 
 interface LineUser {
   id: string;
@@ -118,14 +117,7 @@ export default function LiffLineUsersPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <SpinnerIcon size={64} className="mx-auto mb-4 text-purple-500" />
-          <p className="text-gray-600">กำลังโหลดข้อมูล...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 
   return (

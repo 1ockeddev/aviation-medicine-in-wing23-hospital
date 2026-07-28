@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
-import { SpinnerIcon, FolderIcon, ArrowLeftIcon } from '@/components/icons/LiffIcons';
+import { FolderIcon, ArrowLeftIcon } from '@/components/icons/LiffIcons';
+import LoadingScreen from '@/components/liff/LoadingScreen';
 
 export default function LiffCategoriesPage() {
   const router = useRouter();
@@ -30,11 +31,7 @@ export default function LiffCategoriesPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <SpinnerIcon size={64} className="text-green-500" />
-      </div>
-    );
+    return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 
   return (

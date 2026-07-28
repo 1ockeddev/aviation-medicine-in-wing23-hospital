@@ -7,9 +7,9 @@ import {
   PillIcon, 
   FolderIcon, 
   UsersIcon, 
-  SettingsIcon, 
-  SpinnerIcon 
+  SettingsIcon
 } from '@/components/icons/LiffIcons';
+import LoadingScreen from '@/components/liff/LoadingScreen';
 
 /**
  * LIFF Menu Page
@@ -54,11 +54,7 @@ export default function LiffMenuPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <SpinnerIcon size={64} className="text-blue-500" />
-      </div>
-    );
+    return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 
   return (

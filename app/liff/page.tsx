@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
-import { SpinnerIcon, CheckIcon, XIcon } from '@/components/icons/LiffIcons';
+import { CheckIcon, XIcon } from '@/components/icons/LiffIcons';
+import LoadingScreen from '@/components/liff/LoadingScreen';
 
 /**
  * LIFF Landing Page
@@ -95,22 +96,13 @@ export default function LiffLandingPage() {
     }
   };
 
+  if (status === 'loading') {
+    return <LoadingScreen message="กำลังเข้าสู่ระบบ..." />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        {status === 'loading' && (
-          <>
-            <div className="mb-6">
-              <SpinnerIcon size={64} className="mx-auto text-blue-500" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              กำลังเข้าสู่ระบบ...
-            </h1>
-            <p className="text-gray-600">
-              กรุณารอสักครู่
-            </p>
-          </>
-        )}
 
         {status === 'authenticated' && (
           <>

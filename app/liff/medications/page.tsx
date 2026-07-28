@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
-import { SpinnerIcon, PillIcon, ArrowLeftIcon } from '@/components/icons/LiffIcons';
+import { PillIcon, ArrowLeftIcon } from '@/components/icons/LiffIcons';
+import LoadingScreen from '@/components/liff/LoadingScreen';
 
 /**
  * LIFF Medications Page
@@ -38,11 +39,7 @@ export default function LiffMedicationsPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <SpinnerIcon size={64} className="text-blue-500" />
-      </div>
-    );
+    return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 
   return (
