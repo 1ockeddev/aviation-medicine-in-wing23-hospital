@@ -81,36 +81,36 @@ export default function LiffMenuPage() {
       </div>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
         {/* Medications */}
-        <MenuCard
+        {/* <MenuCard
           icon={<PillIcon size={32} className="text-white" />}
           title="จัดการยา"
           description="เพิ่ม แก้ไข ลบ รายการยา"
           onClick={() => navigateTo('/liff/medications')}
           color="from-blue-400 to-blue-600"
-        />
+        /> */}
 
         {/* Categories */}
-        <MenuCard
+        {/* <MenuCard
           icon={<FolderIcon size={32} className="text-white" />}
           title="จัดการหมวดหมู่"
           description="จัดการหมวดหมู่ยา"
           onClick={() => navigateTo('/liff/categories')}
           color="from-green-400 to-green-600"
-        />
+        /> */}
 
         {/* LINE Users */}
-        <MenuCard
+        {/* <MenuCard
           icon={<UsersIcon size={32} className="text-white" />}
           title="การตั้งค่า"
           description="การแจ้งเตือนยาหมดอายุ"
           onClick={() => navigateTo('/liff/line-users')}
           color="from-purple-400 to-purple-600"
-        />
+        /> */}
 
         {/* Admin Panel (Web) */}
-        <MenuCard
+        {/* <MenuCard
           icon={<SettingsIcon size={32} className="text-white" />}
           title="Admin Panel"
           description="เข้าสู่หน้า Admin แบบเต็ม"
@@ -127,7 +127,7 @@ export default function LiffMenuPage() {
           }}
           color="from-gray-400 to-gray-600"
         />
-      </div>
+      </div> */}
 
       {/* Close Button (if in LINE) */}
       {liff.isInClient() && (
