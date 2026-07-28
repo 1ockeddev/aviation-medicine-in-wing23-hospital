@@ -83,13 +83,6 @@ export default function LiffLineUsersPage() {
             ? { ...user, notificationsEnabled: !currentValue }
             : user
         ));
-        
-        // Show success feedback
-        if (liff.isInClient()) {
-          liff.showToast({
-            text: !currentValue ? 'เปิดการแจ้งเตือนแล้ว ✓' : 'ปิดการแจ้งเตือนแล้ว',
-          });
-        }
       } else {
         setError(data.error || 'ไม่สามารถอัพเดทการตั้งค่าได้');
       }
