@@ -35,7 +35,12 @@ export default function LiffLineUsersPage() {
         router.push('/liff');
         return;
       }
-      await fetchUsers();
+      
+      // Get current user profile
+      const profile = await liff.getProfile();
+      console.log('Current user:', profile.userId);
+      
+      await fetchUsers(profile.userId);
       setIsLoading(false);
     } catch (err) {
       console.error('LIFF error', err);
@@ -43,13 +48,20 @@ export default function LiffLineUsersPage() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (currentUserId: string) => {
     try {
       const response = await fetch('/api/line-users');
       const data = await response.json();
       
       if (data.success) {
-        setUsers(data.users);
+        // Filter to show only current user
+        const currentUser = data.users.find((user: LineUser) => user.lineUserId === currentUserId);
+        
+        if (currentUser) {
+          setUsers([currentUser]);
+        } else {
+          setError('ไม่พบข้อมูลของคุณในระบบ กรุณาลองส่งข้อความใน LINE OA ก่อน');
+        }
       } else {
         setError('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
       }
@@ -119,10 +131,10 @@ export default function LiffLineUsersPage() {
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                👥 ผู้ใช้ LINE
+                👥 การตั้งค่าของฉัน
               </h1>
               <p className="text-sm text-gray-500">
-                {users.length} คน
+                การแจ้งเตือนยาหมดอายุ
               </p>
             </div>
           </div>
@@ -142,54 +154,74 @@ export default function LiffLineUsersPage() {
       <div className="max-w-7xl mx-auto p-4 space-y-3">
         {users.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-            <div className="text-gray-400 text-5xl mb-4">👥</div>
-            <p className="text-gray-600">ยังไม่มีผู้ใช้ลงทะเบียน</p>
+            <div className="text-gray-400 text-5xl mb-4">�</div>
+            <p className="text-gray-600 mb-2">ไม่พบข้อมูลของคุณ</p>
             <p className="text-sm text-gray-500 mt-2">
-              ผู้ใช้จะถูกลงทะเบียนอัตโนมัติเมื่อเพิ่มเพื่อนหรือส่งข้อความ
+              กรุณาส่งข้อความใน LINE OA เพื่อลงทะเบียน
             </p>
+            <button
+              onClick={() => liff.isInClient() && liff.closeWindow()}
+              className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              ปิดหน้าต่าง
+            </button>
           </div>
         ) : (
           users.map((user) => (
             <div
               key={user.id}
-              className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition"
+              className="bg-white rounded-xl shadow-sm p-6"
             >
-              <div className="flex items-center gap-4">
-                {/* Profile Picture */}
+              {/* Profile Section */}
+              <div className="flex items-center gap-4 mb-6">
                 {user.pictureUrl ? (
                   <img
                     src={user.pictureUrl}
                     alt={user.displayName}
-                    className="w-14 h-14 rounded-full flex-shrink-0"
+                    className="w-20 h-20 rounded-full flex-shrink-0 border-4 border-blue-100"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">👤</span>
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <span className="text-3xl text-white">👤</span>
                   </div>
                 )}
 
-                {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-800 truncate">
+                  <h2 className="text-xl font-bold text-gray-800 truncate">
                     {user.displayName}
-                  </h3>
-                  <p className="text-xs text-gray-500 truncate">
-                    ID: {user.lineUserId}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    ลงทะเบียนเมื่อ: {new Date(user.createdAt).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-500">
-                      แจ้งเตือนล่วงหน้า: {user.daysBeforeExpiration} วัน
-                    </span>
-                  </div>
                 </div>
+              </div>
 
-                {/* Notification Toggle */}
-                <div className="flex flex-col items-end gap-1">
+              {/* Divider */}
+              <div className="border-t border-gray-100 mb-6"></div>
+
+              {/* Notification Settings */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-800 mb-3">
+                  ⚙️ การตั้งค่าการแจ้งเตือน
+                </h3>
+
+                {/* Toggle Switch */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">การแจ้งเตือน</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      รับการแจ้งเตือนเมื่อยาใกล้หมดอายุ
+                    </p>
+                  </div>
                   <button
                     onClick={() => toggleNotifications(user.id, user.notificationsEnabled)}
                     disabled={updatingUserId === user.id}
                     className={`
-                      relative inline-flex h-8 w-14 items-center rounded-full
+                      relative inline-flex h-10 w-16 items-center rounded-full
                       transition-colors duration-200 ease-in-out
                       ${user.notificationsEnabled ? 'bg-green-500' : 'bg-gray-300'}
                       ${updatingUserId === user.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -197,38 +229,55 @@ export default function LiffLineUsersPage() {
                   >
                     <span
                       className={`
-                        inline-block h-6 w-6 transform rounded-full bg-white
+                        inline-block h-8 w-8 transform rounded-full bg-white
                         transition-transform duration-200 ease-in-out shadow-lg
                         ${user.notificationsEnabled ? 'translate-x-7' : 'translate-x-1'}
                       `}
                     />
                   </button>
-                  <span className={`text-xs font-medium ${
-                    user.notificationsEnabled ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    {updatingUserId === user.id ? '...' : user.notificationsEnabled ? 'เปิด' : 'ปิด'}
-                  </span>
                 </div>
-              </div>
 
-              {/* Status Badge */}
-              <div className="mt-3 flex items-center gap-2">
-                {user.notificationsEnabled ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs">
-                    🔔 รับการแจ้งเตือน
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 text-gray-600 rounded-md text-xs">
-                    🔕 ไม่รับการแจ้งเตือน
-                  </span>
-                )}
-                <span className="text-xs text-gray-400">
-                  ลงทะเบียน: {new Date(user.createdAt).toLocaleDateString('th-TH', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </span>
+                {/* Days Before Expiration */}
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">📅</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800">แจ้งเตือนล่วงหน้า</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        จะได้รับการแจ้งเตือนก่อนยาหมดอายุ{' '}
+                        <span className="font-bold text-blue-600">{user.daysBeforeExpiration} วัน</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className={`p-4 rounded-xl border ${
+                  user.notificationsEnabled 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {user.notificationsEnabled ? '🔔' : '🔕'}
+                    </span>
+                    <div className="flex-1">
+                      <p className={`font-medium ${
+                        user.notificationsEnabled ? 'text-green-800' : 'text-gray-800'
+                      }`}>
+                        {user.notificationsEnabled ? 'กำลังรับการแจ้งเตือน' : 'ไม่ได้รับการแจ้งเตือน'}
+                      </p>
+                      <p className={`text-sm mt-1 ${
+                        user.notificationsEnabled ? 'text-green-700' : 'text-gray-600'
+                      }`}>
+                        {user.notificationsEnabled 
+                          ? 'คุณจะได้รับข้อความแจ้งเตือนเมื่อยาใกล้หมดอายุ'
+                          : 'คุณจะไม่ได้รับการแจ้งเตือนใดๆ'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ))
@@ -241,8 +290,8 @@ export default function LiffLineUsersPage() {
           <p className="font-medium mb-2">💡 เกี่ยวกับการแจ้งเตือน</p>
           <ul className="space-y-1 text-xs">
             <li>• เปิด/ปิดการแจ้งเตือนได้ด้วยการสลับสวิตช์</li>
-            <li>• จะได้รับการแจ้งเตือนเมื่อยาใกล้หมดอายุ</li>
-            <li>• แจ้งเตือนล่วงหน้าตามจำนวนวันที่ตั้งไว้</li>
+            <li>• จะได้รับการแจ้งเตือนเมื่อยาใกล้หมดอายุตามจำนวนวันที่ตั้งไว้</li>
+            <li>• การแจ้งเตือนจะถูกส่งผ่านข้อความ LINE โดยอัตโนมัติ</li>
           </ul>
         </div>
       </div>
