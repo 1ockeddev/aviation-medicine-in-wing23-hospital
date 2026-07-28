@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
+import { SpinnerIcon, FolderIcon, ArrowLeftIcon } from '@/components/icons/LiffIcons';
 
 export default function LiffCategoriesPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function LiffCategoriesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500"></div>
+        <SpinnerIcon size={64} className="text-green-500" />
       </div>
     );
   }
@@ -45,11 +46,14 @@ export default function LiffCategoriesPage() {
               onClick={() => router.push('/liff/menu')}
               className="text-gray-600 hover:text-gray-800"
             >
-              ← กลับ
+              <ArrowLeftIcon size={24} />
             </button>
-            <h1 className="text-xl font-bold text-gray-800">
-              📁 จัดการหมวดหมู่
-            </h1>
+            <div className="flex items-center gap-2">
+              <FolderIcon size={24} className="text-green-600" />
+              <h1 className="text-xl font-bold text-gray-800">
+                จัดการหมวดหมู่
+              </h1>
+            </div>
           </div>
         </div>
       </div>

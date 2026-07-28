@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
+import { 
+  PillIcon, 
+  FolderIcon, 
+  UsersIcon, 
+  SettingsIcon, 
+  SpinnerIcon 
+} from '@/components/icons/LiffIcons';
 
 /**
  * LIFF Menu Page
@@ -49,7 +56,7 @@ export default function LiffMenuPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+        <SpinnerIcon size={64} className="text-blue-500" />
       </div>
     );
   }
@@ -81,7 +88,7 @@ export default function LiffMenuPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Medications */}
         <MenuCard
-          icon="💊"
+          icon={<PillIcon size={32} className="text-white" />}
           title="จัดการยา"
           description="เพิ่ม แก้ไข ลบ รายการยา"
           onClick={() => navigateTo('/liff/medications')}
@@ -90,7 +97,7 @@ export default function LiffMenuPage() {
 
         {/* Categories */}
         <MenuCard
-          icon="📁"
+          icon={<FolderIcon size={32} className="text-white" />}
           title="จัดการหมวดหมู่"
           description="จัดการหมวดหมู่ยา"
           onClick={() => navigateTo('/liff/categories')}
@@ -99,16 +106,16 @@ export default function LiffMenuPage() {
 
         {/* LINE Users */}
         <MenuCard
-          icon="👥"
-          title="ผู้ใช้ LINE"
-          description="จัดการผู้ใช้ที่ลงทะเบียน"
+          icon={<UsersIcon size={32} className="text-white" />}
+          title="การตั้งค่า"
+          description="การแจ้งเตือนยาหมดอายุ"
           onClick={() => navigateTo('/liff/line-users')}
           color="from-purple-400 to-purple-600"
         />
 
         {/* Admin Panel (Web) */}
         <MenuCard
-          icon="⚙️"
+          icon={<SettingsIcon size={32} className="text-white" />}
           title="Admin Panel"
           description="เข้าสู่หน้า Admin แบบเต็ม"
           onClick={() => {
@@ -142,7 +149,7 @@ export default function LiffMenuPage() {
 }
 
 interface MenuCardProps {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   onClick: () => void;
@@ -155,7 +162,7 @@ function MenuCard({ icon, title, description, onClick, color }: MenuCardProps) {
       onClick={onClick}
       className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all transform hover:-translate-y-1"
     >
-      <div className={`bg-gradient-to-br ${color} w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg`}>
+      <div className={`bg-gradient-to-br ${color} w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg`}>
         {icon}
       </div>
       <h2 className="text-lg font-bold text-gray-800 mb-2 text-left">

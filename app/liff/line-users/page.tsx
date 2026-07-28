@@ -3,6 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
+import { 
+  SpinnerIcon, 
+  UsersIcon, 
+  ArrowLeftIcon, 
+  UserIcon,
+  BellIcon,
+  BellOffIcon,
+  CalendarIcon,
+  InfoIcon,
+  AlertIcon
+} from '@/components/icons/LiffIcons';
 
 interface LineUser {
   id: string;
@@ -110,7 +121,7 @@ export default function LiffLineUsersPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <SpinnerIcon size={64} className="mx-auto mb-4 text-purple-500" />
           <p className="text-gray-600">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
@@ -123,19 +134,16 @@ export default function LiffLineUsersPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/liff/menu')}
-              className="text-gray-600 hover:text-gray-800 text-2xl"
-            >
-              ←
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">
-                👥 การตั้งค่าของฉัน
-              </h1>
-              <p className="text-sm text-gray-500">
-                การแจ้งเตือนยาหมดอายุ
-              </p>
+            <div className="flex items-center gap-2">
+              <UsersIcon size={24} className="text-purple-600" />
+              <div>
+                <h1 className="text-xl font-bold text-gray-800">
+                  การตั้งค่าของฉัน
+                </h1>
+                <p className="text-sm text-gray-500">
+                  การแจ้งเตือนยาหมดอายุ
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -144,8 +152,9 @@ export default function LiffLineUsersPage() {
       {/* Error Message */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
-            ⚠️ {error}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm flex items-start gap-3">
+            <AlertIcon size={20} className="flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         </div>
       )}
@@ -154,7 +163,7 @@ export default function LiffLineUsersPage() {
       <div className="max-w-7xl mx-auto p-4 space-y-3">
         {users.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-            <div className="text-gray-400 text-5xl mb-4">�</div>
+            <UserIcon size={64} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-600 mb-2">ไม่พบข้อมูลของคุณ</p>
             <p className="text-sm text-gray-500 mt-2">
               กรุณาส่งข้อความใน LINE OA เพื่อลงทะเบียน
@@ -182,7 +191,7 @@ export default function LiffLineUsersPage() {
                   />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-3xl text-white">👤</span>
+                    <UserIcon size={40} className="text-white" />
                   </div>
                 )}
 
@@ -205,17 +214,23 @@ export default function LiffLineUsersPage() {
 
               {/* Notification Settings */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 mb-3">
-                  ⚙️ การตั้งค่าการแจ้งเตือน
-                </h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <SettingsIcon size={20} className="text-gray-700" />
+                  <h3 className="font-semibold text-gray-800">
+                    การตั้งค่าการแจ้งเตือน
+                  </h3>
+                </div>
 
                 {/* Toggle Switch */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-800">การแจ้งเตือน</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      รับการแจ้งเตือนเมื่อยาใกล้หมดอายุ
-                    </p>
+                  <div className="flex-1 flex items-center gap-3">
+                    <BellIcon size={24} className="text-gray-600" />
+                    <div>
+                      <p className="font-medium text-gray-800">การแจ้งเตือน</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        รับการแจ้งเตือนเมื่อยาใกล้หมดอายุ
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={() => toggleNotifications(user.id, user.notificationsEnabled)}
@@ -240,7 +255,7 @@ export default function LiffLineUsersPage() {
                 {/* Days Before Expiration */}
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">📅</span>
+                    <CalendarIcon size={24} className="text-blue-600 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="font-medium text-gray-800">แจ้งเตือนล่วงหน้า</p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -258,9 +273,11 @@ export default function LiffLineUsersPage() {
                     : 'bg-gray-50 border-gray-200'
                 }`}>
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">
-                      {user.notificationsEnabled ? '🔔' : '🔕'}
-                    </span>
+                    {user.notificationsEnabled ? (
+                      <BellIcon size={24} className="text-green-600 flex-shrink-0" />
+                    ) : (
+                      <BellOffIcon size={24} className="text-gray-600 flex-shrink-0" />
+                    )}
                     <div className="flex-1">
                       <p className={`font-medium ${
                         user.notificationsEnabled ? 'text-green-800' : 'text-gray-800'
@@ -287,12 +304,17 @@ export default function LiffLineUsersPage() {
       {/* Help Text */}
       <div className="max-w-7xl mx-auto px-4 pb-6">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-          <p className="font-medium mb-2">💡 เกี่ยวกับการแจ้งเตือน</p>
-          <ul className="space-y-1 text-xs">
-            <li>• เปิด/ปิดการแจ้งเตือนได้ด้วยการสลับสวิตช์</li>
-            <li>• จะได้รับการแจ้งเตือนเมื่อยาใกล้หมดอายุตามจำนวนวันที่ตั้งไว้</li>
-            <li>• การแจ้งเตือนจะถูกส่งผ่านข้อความ LINE โดยอัตโนมัติ</li>
-          </ul>
+          <div className="flex items-start gap-3">
+            <InfoIcon size={20} className="flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium mb-2">เกี่ยวกับการแจ้งเตือน</p>
+              <ul className="space-y-1 text-xs">
+                <li>• เปิด/ปิดการแจ้งเตือนได้ด้วยการสลับสวิตช์</li>
+                <li>• จะได้รับการแจ้งเตือนเมื่อยาใกล้หมดอายุตามจำนวนวันที่ตั้งไว้</li>
+                <li>• การแจ้งเตือนจะถูกส่งผ่านข้อความ LINE โดยอัตโนมัติ</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -308,5 +330,22 @@ export default function LiffLineUsersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Import SettingsIcon
+function SettingsIcon({ className = '', size = 24 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.2" />
+      <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1M4.22 4.22l4.24 4.24m7.07 7.07l4.24 4.24M19.78 4.22l-4.24 4.24m-7.07 7.07l-4.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
   );
 }

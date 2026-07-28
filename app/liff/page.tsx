@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
+import { SpinnerIcon, CheckIcon, XIcon } from '@/components/icons/LiffIcons';
 
 /**
  * LIFF Landing Page
@@ -100,7 +101,7 @@ export default function LiffLandingPage() {
         {status === 'loading' && (
           <>
             <div className="mb-6">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+              <SpinnerIcon size={64} className="mx-auto text-blue-500" />
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
               กำลังเข้าสู่ระบบ...
@@ -121,7 +122,7 @@ export default function LiffLandingPage() {
                   className="w-20 h-20 rounded-full mx-auto mb-4"
                 />
               )}
-              <div className="text-green-500 text-5xl mb-4">✓</div>
+              <CheckIcon size={48} className="mx-auto text-green-500" />
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
               ยินดีต้อนรับ!
@@ -138,7 +139,7 @@ export default function LiffLandingPage() {
         {status === 'error' && (
           <>
             <div className="mb-6">
-              <div className="text-red-500 text-5xl mb-4">✗</div>
+              <XIcon size={48} className="mx-auto text-red-500" />
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
               เกิดข้อผิดพลาด
