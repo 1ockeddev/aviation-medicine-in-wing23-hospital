@@ -26,7 +26,14 @@ export async function createMedication(
   const session = await auth();
   const liffToken = formData.get('_liffAccessToken') as string | null;
   
+  console.log('createMedication auth check:', { 
+    hasSession: !!session, 
+    hasLiffToken: !!liffToken,
+    liffTokenPreview: liffToken ? `${liffToken.substring(0, 20)}...` : null 
+  });
+  
   if (!session && !liffToken) {
+    console.error('createMedication: No authentication provided');
     return { error: 'ไม่ได้รับอนุญาต' };
   }
   
@@ -34,8 +41,10 @@ export async function createMedication(
   if (!session && liffToken) {
     const { verifyLiffToken } = await import('@/lib/line-liff');
     const profile = await verifyLiffToken(liffToken);
+    console.log('LIFF token verification result:', { success: !!profile, userId: profile?.userId });
     if (!profile) {
-      return { error: 'ไม่ได้รับอนุญาต' };
+      console.error('createMedication: LIFF token verification failed');
+      return { error: 'ไม่ได้รับอนุญาต: การยืนยันตัวตนล้มเหลว' };
     }
   }
 
@@ -108,7 +117,14 @@ export async function updateMedication(
   const session = await auth();
   const liffToken = formData.get('_liffAccessToken') as string | null;
   
+  console.log('updateMedication auth check:', { 
+    hasSession: !!session, 
+    hasLiffToken: !!liffToken,
+    liffTokenPreview: liffToken ? `${liffToken.substring(0, 20)}...` : null 
+  });
+  
   if (!session && !liffToken) {
+    console.error('updateMedication: No authentication provided');
     return { error: 'ไม่ได้รับอนุญาต' };
   }
   
@@ -116,8 +132,10 @@ export async function updateMedication(
   if (!session && liffToken) {
     const { verifyLiffToken } = await import('@/lib/line-liff');
     const profile = await verifyLiffToken(liffToken);
+    console.log('LIFF token verification result:', { success: !!profile, userId: profile?.userId });
     if (!profile) {
-      return { error: 'ไม่ได้รับอนุญาต' };
+      console.error('updateMedication: LIFF token verification failed');
+      return { error: 'ไม่ได้รับอนุญาต: การยืนยันตัวตนล้มเหลว' };
     }
   }
 
@@ -206,7 +224,14 @@ export async function deleteMedication(
   // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
   
+  console.log('deleteMedication auth check:', { 
+    hasSession: !!session, 
+    hasLiffToken: !!liffAccessToken,
+    liffTokenPreview: liffAccessToken ? `${liffAccessToken.substring(0, 20)}...` : null 
+  });
+  
   if (!session && !liffAccessToken) {
+    console.error('deleteMedication: No authentication provided');
     return { error: 'ไม่ได้รับอนุญาต' };
   }
   
@@ -214,8 +239,10 @@ export async function deleteMedication(
   if (!session && liffAccessToken) {
     const { verifyLiffToken } = await import('@/lib/line-liff');
     const profile = await verifyLiffToken(liffAccessToken);
+    console.log('LIFF token verification result:', { success: !!profile, userId: profile?.userId });
     if (!profile) {
-      return { error: 'ไม่ได้รับอนุญาต' };
+      console.error('deleteMedication: LIFF token verification failed');
+      return { error: 'ไม่ได้รับอนุญาต: การยืนยันตัวตนล้มเหลว' };
     }
   }
 

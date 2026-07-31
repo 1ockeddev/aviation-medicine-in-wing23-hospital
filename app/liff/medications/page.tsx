@@ -177,7 +177,15 @@ export default function LiffMedicationsPage() {
     try {
       // Get LIFF access token
       const accessToken = liff.getAccessToken();
+      console.log('[LIFF Client] Access token check:', {
+        hasToken: !!accessToken,
+        tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : null,
+        liffInitialized: liff.isInClient(),
+        isLoggedIn: liff.isLoggedIn()
+      });
+      
       if (!accessToken) {
+        console.error('[LIFF Client] No access token available');
         setFormError('ไม่สามารถยืนยันตัวตนได้');
         setIsSubmitting(false);
         return;
@@ -196,10 +204,14 @@ export default function LiffMedicationsPage() {
       formDataObj.append('categoryId', formData.categoryId);
       // Add LIFF access token for authentication
       formDataObj.append('_liffAccessToken', accessToken);
+      
+      console.log('[LIFF Client] Calling server action:', modalMode);
 
       const result = modalMode === 'create'
         ? await createMedication(null, formDataObj)
         : await updateMedication(currentMedication!.id, null, formDataObj);
+
+      console.log('[LIFF Client] Server action result:', result);
 
       if (result.success) {
         showToast(
@@ -209,9 +221,11 @@ export default function LiffMedicationsPage() {
         closeModal();
         await fetchMedications();
       } else {
+        console.error('[LIFF Client] Server action error:', result.error);
         setFormError(typeof result.error === 'string' ? result.error : 'เกิดข้อผิดพลาด');
       }
     } catch (err) {
+      console.error('[LIFF Client] Exception in handleSubmit:', err);
       setFormError('เกิดข้อผิดพลาดในการบันทึก');
     } finally {
       setIsSubmitting(false);
@@ -226,19 +240,30 @@ export default function LiffMedicationsPage() {
     try {
       // Get LIFF access token
       const accessToken = liff.getAccessToken();
+      console.log('[LIFF Client] Delete - Access token check:', {
+        hasToken: !!accessToken,
+        tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : null
+      });
+      
       if (!accessToken) {
+        console.error('[LIFF Client] Delete - No access token available');
         showToast('ไม่สามารถยืนยันตัวตนได้', 'error');
         return;
       }
 
+      console.log('[LIFF Client] Calling deleteMedication...');
       const result = await deleteMedication(medication.id, accessToken);
+      console.log('[LIFF Client] Delete result:', result);
+      
       if (result.success) {
         showToast('ลบยาสำเร็จ', 'success');
         await fetchMedications();
       } else {
+        console.error('[LIFF Client] Delete error:', result.error);
         showToast(typeof result.error === 'string' ? result.error : 'ไม่สามารถลบยาได้', 'error');
       }
     } catch (err) {
+      console.error('[LIFF Client] Exception in handleDelete:', err);
       showToast('เกิดข้อผิดพลาดในการลบ', 'error');
     }
   };
