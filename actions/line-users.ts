@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { logActivity } from '@/lib/activity-log';
 import { LineUserSchema } from '@/lib/validations';
 import type { ActionState } from '@/types';
 
@@ -63,7 +64,7 @@ export async function createLineUser(
     }
 
     // Store LINE user in database (Requirement 4.1)
-    await prisma.lineUser.create({
+    const lineUser = await prisma.lineUser.create({
       data: validatedFields.data,
     });
 
@@ -71,6 +72,15 @@ export async function createLineUser(
       lineUserId: validatedFields.data.lineUserId,
       displayName: validatedFields.data.displayName,
       timestamp: new Date().toISOString(),
+    });
+
+    // Log activity
+    await logActivity({
+      action: 'CREATE',
+      entity: 'LineUser',
+      entityId: lineUser.id,
+      entityName: validatedFields.data.displayName,
+      details: `LINE User ID: ${validatedFields.data.lineUserId}`,
     });
 
     // Revalidate cache (Requirement 4.5)
@@ -141,6 +151,12 @@ export async function updateLineUser(
       return { error: 'LINE User ID นี้มีอยู่ในระบบแล้ว' };
     }
 
+    // Get old data for logging
+    const oldUser = await prisma.lineUser.findUnique({
+      where: { id },
+      select: { displayName: true, lineUserId: true, notificationsEnabled: true },
+    });
+
     // Update LINE user in database (Requirement 4.2)
     await prisma.lineUser.update({
       where: { id },
@@ -153,6 +169,23 @@ export async function updateLineUser(
       displayName: validatedFields.data.displayName,
       notificationsEnabled: validatedFields.data.notificationsEnabled,
       timestamp: new Date().toISOString(),
+    });
+
+    // Log activity
+    const changes = [];
+    if (oldUser?.displayName !== validatedFields.data.displayName) {
+      changes.push(`displayName: "${oldUser?.displayName}" → "${validatedFields.data.displayName}"`);
+    }
+    if (oldUser?.notificationsEnabled !== validatedFields.data.notificationsEnabled) {
+      changes.push(`notifications: ${oldUser?.notificationsEnabled ? 'enabled' : 'disabled'} → ${validatedFields.data.notificationsEnabled ? 'enabled' : 'disabled'}`);
+    }
+
+    await logActivity({
+      action: 'UPDATE',
+      entity: 'LineUser',
+      entityId: id,
+      entityName: validatedFields.data.displayName,
+      details: changes.length > 0 ? changes.join(', ') : 'Updated LINE user',
     });
 
     // Revalidate cache (Requirement 4.5)
@@ -207,6 +240,15 @@ export async function deleteLineUser(id: string): Promise<ActionState> {
       lineUserId: user.lineUserId,
       displayName: user.displayName,
       timestamp: new Date().toISOString(),
+    });
+
+    // Log activity
+    await logActivity({
+      action: 'DELETE',
+      entity: 'LineUser',
+      entityId: id,
+      entityName: user.displayName,
+      details: `LINE User ID: ${user.lineUserId}`,
     });
 
     // Revalidate cache (Requirement 4.5)
