@@ -2,7 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { ActivityLog } from '@prisma/client';
+
+// Define ActivityLog type locally since it's not exported from Prisma Client
+interface ActivityLog {
+  id: string;
+  userId: string | null;
+  username: string | null;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  entityName: string | null;
+  details: string | null;
+  createdAt: Date;
+}
 
 interface LogsClientPageProps {
   logs: ActivityLog[];
