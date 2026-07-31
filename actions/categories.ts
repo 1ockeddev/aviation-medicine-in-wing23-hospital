@@ -22,10 +22,21 @@ export async function createCategory(
   _prevState: unknown,
   formData: FormData
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  const liffToken = formData.get('_liffAccessToken') as string | null;
+  
+  if (!session && !liffToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   // Validate form data
@@ -123,10 +134,21 @@ export async function updateCategory(
   _prevState: unknown,
   formData: FormData
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  const liffToken = formData.get('_liffAccessToken') as string | null;
+  
+  if (!session && !liffToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   // Validate form data
@@ -223,12 +245,23 @@ export async function updateCategory(
  * Prevents deletion if medications or sub-categories exist (Requirements 2.6, 2.7, 9.4, 9.6)
  */
 export async function deleteCategory(
-  id: string
+  id: string,
+  liffAccessToken?: string
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  
+  if (!session && !liffAccessToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffAccessToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffAccessToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   try {

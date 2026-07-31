@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import liff from '@line/liff';
+import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { 
   UsersIcon, 
   UserIcon,
@@ -27,36 +27,17 @@ interface LineUser {
 
 export default function LiffLineUsersPage() {
   const router = useRouter();
+  const { isLoading: isAuthLoading, userProfile, liff } = useLiffAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<LineUser[]>([]);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    initializeLiff();
-  }, []);
-
-  const initializeLiff = async () => {
-    try {
-      const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-      if (!liffId) throw new Error('LIFF ID not configured');
-      await liff.init({ liffId });
-      if (!liff.isLoggedIn()) {
-        router.push('/liff');
-        return;
-      }
-      
-      // Get current user profile
-      const profile = await liff.getProfile();
-      console.log('Current user:', profile.userId);
-      
-      await fetchUsers(profile.userId);
-      setIsLoading(false);
-    } catch (err) {
-      console.error('LIFF error', err);
-      router.push('/liff');
+    if (!isAuthLoading && userProfile) {
+      fetchUsers(userProfile.userId);
     }
-  };
+  }, [isAuthLoading, userProfile]);
 
   const fetchUsers = async (currentUserId: string) => {
     try {
@@ -69,6 +50,7 @@ export default function LiffLineUsersPage() {
         
         if (currentUser) {
           setUsers([currentUser]);
+          setIsLoading(false);
         } else {
           // User not found - try to register automatically
           await registerCurrentUser();
@@ -84,7 +66,7 @@ export default function LiffLineUsersPage() {
 
   const registerCurrentUser = async () => {
     try {
-      const profile = await liff.getProfile();
+      if (!userProfile) return;
       
       const response = await fetch('/api/line/register', {
         method: 'POST',
@@ -92,15 +74,15 @@ export default function LiffLineUsersPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: profile.userId,
-          displayName: profile.displayName,
-          pictureUrl: profile.pictureUrl,
+          userId: userProfile.userId,
+          displayName: userProfile.displayName,
+          pictureUrl: userProfile.pictureUrl,
         }),
       });
 
       if (response.ok) {
         // Refresh user data after registration
-        await fetchUsers(profile.userId);
+        await fetchUsers(userProfile.userId);
       } else {
         setError('ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง');
       }
@@ -145,7 +127,7 @@ export default function LiffLineUsersPage() {
     }
   };
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 
@@ -194,7 +176,9 @@ export default function LiffLineUsersPage() {
                 <button
                   onClick={() => {
                     setError('');
-                    initializeLiff();
+                    if (userProfile) {
+                      fetchUsers(userProfile.userId);
+                    }
                   }}
                   className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
                 >

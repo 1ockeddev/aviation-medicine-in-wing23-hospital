@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import liff from '@line/liff';
+import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { 
   PillIcon, 
   ArrowLeftIcon, 
@@ -55,6 +55,7 @@ interface MedicationFormData {
 
 export default function LiffMedicationsPage() {
   const router = useRouter();
+  const { isLoading: isAuthLoading, liff } = useLiffAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -84,26 +85,11 @@ export default function LiffMedicationsPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
-    initializeLiff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const initializeLiff = async () => {
-    try {
-      const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-      if (!liffId) throw new Error('LIFF ID not configured');
-      await liff.init({ liffId });
-      if (!liff.isLoggedIn()) {
-        router.push('/liff');
-        return;
-      }
-      await fetchMedications();
-      setIsLoading(false);
-    } catch (err) {
-      console.error('LIFF error', err);
-      router.push('/liff');
+    if (!isAuthLoading) {
+      fetchMedications();
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading]);
 
   const fetchMedications = async () => {
     try {
@@ -113,6 +99,7 @@ export default function LiffMedicationsPage() {
         setMedications(data.medications);
         setCategories(data.categories);
       }
+      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching medications', err);
       showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
@@ -188,6 +175,14 @@ export default function LiffMedicationsPage() {
     setFormError('');
 
     try {
+      // Get LIFF access token
+      const accessToken = liff.getAccessToken();
+      if (!accessToken) {
+        setFormError('ไม่สามารถยืนยันตัวตนได้');
+        setIsSubmitting(false);
+        return;
+      }
+
       const formDataObj = new FormData();
       formDataObj.append('name', formData.name);
       if (formData.tradeName) formDataObj.append('tradeName', formData.tradeName);
@@ -199,6 +194,8 @@ export default function LiffMedicationsPage() {
       if (formData.sideEffects) formDataObj.append('sideEffects', formData.sideEffects);
       if (formData.notes) formDataObj.append('notes', formData.notes);
       formDataObj.append('categoryId', formData.categoryId);
+      // Add LIFF access token for authentication
+      formDataObj.append('_liffAccessToken', accessToken);
 
       const result = modalMode === 'create'
         ? await createMedication(null, formDataObj)
@@ -227,7 +224,14 @@ export default function LiffMedicationsPage() {
     }
 
     try {
-      const result = await deleteMedication(medication.id);
+      // Get LIFF access token
+      const accessToken = liff.getAccessToken();
+      if (!accessToken) {
+        showToast('ไม่สามารถยืนยันตัวตนได้', 'error');
+        return;
+      }
+
+      const result = await deleteMedication(medication.id, accessToken);
       if (result.success) {
         showToast('ลบยาสำเร็จ', 'success');
         await fetchMedications();
@@ -274,7 +278,7 @@ export default function LiffMedicationsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 

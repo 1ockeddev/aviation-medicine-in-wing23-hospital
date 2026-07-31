@@ -22,10 +22,21 @@ export async function createMedication(
   _prevState: unknown,
   formData: FormData
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  const liffToken = formData.get('_liffAccessToken') as string | null;
+  
+  if (!session && !liffToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   // Validate form data (Requirements 3.3, 3.5, 3.6, 3.7, 3.8)
@@ -93,10 +104,21 @@ export async function updateMedication(
   _prevState: unknown,
   formData: FormData
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  const liffToken = formData.get('_liffAccessToken') as string | null;
+  
+  if (!session && !liffToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   // Validate form data (Requirement 5.3)
@@ -178,12 +200,23 @@ export async function updateMedication(
  * Removes medication from database with confirmation (Requirements 6.3, 6.4, 6.5, 9.4)
  */
 export async function deleteMedication(
-  id: string
+  id: string,
+  liffAccessToken?: string
 ): Promise<ActionState> {
-  // Authentication check (Requirement 9.4)
+  // Authentication check (Requirement 9.4) - support both NextAuth and LIFF
   const session = await auth();
-  if (!session) {
+  
+  if (!session && !liffAccessToken) {
     return { error: 'ไม่ได้รับอนุญาต' };
+  }
+  
+  // Verify LIFF token if provided
+  if (!session && liffAccessToken) {
+    const { verifyLiffToken } = await import('@/lib/line-liff');
+    const profile = await verifyLiffToken(liffAccessToken);
+    if (!profile) {
+      return { error: 'ไม่ได้รับอนุญาต' };
+    }
   }
 
   try {

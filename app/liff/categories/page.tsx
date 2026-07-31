@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import liff from '@line/liff';
+import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { 
   FolderIcon, 
   ArrowLeftIcon, 
@@ -33,6 +33,7 @@ interface CategoryFormData {
 
 export default function LiffCategoriesPage() {
   const router = useRouter();
+  const { isLoading: isAuthLoading, liff } = useLiffAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [parentCategories, setParentCategories] = useState<any[]>([]);
@@ -51,26 +52,11 @@ export default function LiffCategoriesPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
-    initializeLiff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const initializeLiff = async () => {
-    try {
-      const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-      if (!liffId) throw new Error('LIFF ID not configured');
-      await liff.init({ liffId });
-      if (!liff.isLoggedIn()) {
-        router.push('/liff');
-        return;
-      }
-      await fetchCategories();
-      setIsLoading(false);
-    } catch (err) {
-      console.error('LIFF error', err);
-      router.push('/liff');
+    if (!isAuthLoading) {
+      fetchCategories();
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading]);
 
   const fetchCategories = async () => {
     try {
@@ -80,6 +66,7 @@ export default function LiffCategoriesPage() {
         setCategories(data.categories);
         setParentCategories(data.parentCategories);
       }
+      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching categories', err);
       showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
@@ -130,11 +117,21 @@ export default function LiffCategoriesPage() {
     setFormError('');
 
     try {
+      // Get LIFF access token
+      const accessToken = liff.getAccessToken();
+      if (!accessToken) {
+        setFormError('ไม่สามารถยืนยันตัวตนได้');
+        setIsSubmitting(false);
+        return;
+      }
+
       const formDataObj = new FormData();
       formDataObj.append('name', formData.name);
       if (formData.parentId) {
         formDataObj.append('parentId', formData.parentId);
       }
+      // Add LIFF access token for authentication
+      formDataObj.append('_liffAccessToken', accessToken);
 
       const result = modalMode === 'create'
         ? await createCategory(null, formDataObj)
@@ -163,7 +160,14 @@ export default function LiffCategoriesPage() {
     }
 
     try {
-      const result = await deleteCategory(category.id);
+      // Get LIFF access token
+      const accessToken = liff.getAccessToken();
+      if (!accessToken) {
+        showToast('ไม่สามารถยืนยันตัวตนได้', 'error');
+        return;
+      }
+
+      const result = await deleteCategory(category.id, accessToken);
       if (result.success) {
         showToast('ลบหมวดหมู่สำเร็จ', 'success');
         await fetchCategories();
@@ -252,7 +256,7 @@ export default function LiffCategoriesPage() {
     );
   };
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return <LoadingScreen message="กำลังโหลดข้อมูล..." />;
   }
 

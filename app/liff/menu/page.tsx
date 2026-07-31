@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import liff from '@line/liff';
+import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { 
   PillIcon, 
   FolderIcon, 
@@ -18,36 +17,7 @@ import LoadingScreen from '@/components/liff/LoadingScreen';
  */
 export default function LiffMenuPage() {
   const router = useRouter();
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    initializeLiff();
-  }, []);
-
-  const initializeLiff = async () => {
-    try {
-      const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-      
-      if (!liffId) {
-        throw new Error('LIFF ID not configured');
-      }
-
-      await liff.init({ liffId });
-
-      if (!liff.isLoggedIn()) {
-        router.push('/liff');
-        return;
-      }
-
-      const profile = await liff.getProfile();
-      setUserProfile(profile);
-      setIsLoading(false);
-    } catch (err) {
-      console.error('LIFF error', err);
-      router.push('/liff');
-    }
-  };
+  const { isLoading, userProfile, liff } = useLiffAuth();
 
   const navigateTo = (path: string) => {
     router.push(path);
