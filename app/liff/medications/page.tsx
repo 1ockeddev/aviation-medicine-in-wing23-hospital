@@ -85,6 +85,7 @@ export default function LiffMedicationsPage() {
 
   useEffect(() => {
     initializeLiff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeLiff = async () => {

@@ -34,29 +34,58 @@ export async function GET() {
       orderBy: { order: 'asc' },
     });
 
+    // Add numbering to categories
+    const addNumbering = (cats: any[], prefix = ''): any[] => {
+      return cats.map((cat, index) => {
+        const number = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
+        return {
+          ...cat,
+          number,
+          children: cat.children ? addNumbering(cat.children, number) : [],
+        };
+      });
+    };
+
+    const categoriesWithNumbers = addNumbering(categories);
+
     // Fetch all categories that can be parents (Level 1 and 2 only)
-    const parentCategories = await prisma.category.findMany({
-      where: {
-        OR: [
-          { parentId: null }, // Level 1
-          {
-            parent: {
-              parentId: null, // Level 2 (parent is Level 1)
-            },
+    const level1Categories = await prisma.category.findMany({
+      where: { parentId: null },
+      include: {
+        children: {
+          select: {
+            id: true,
+            name: true,
+            order: true,
           },
-        ],
+          orderBy: { order: 'asc' },
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        number: true,
-      },
-      orderBy: [{ number: 'asc' }],
+      orderBy: { order: 'asc' },
+    });
+
+    // Flatten with numbering for parent options
+    const parentCategories: { id: string; name: string; number: string }[] = [];
+
+    level1Categories.forEach((level1, i) => {
+      parentCategories.push({
+        id: level1.id,
+        name: level1.name,
+        number: `${i + 1}`,
+      });
+
+      level1.children.forEach((level2, j) => {
+        parentCategories.push({
+          id: level2.id,
+          name: level2.name,
+          number: `${i + 1}.${j + 1}`,
+        });
+      });
     });
 
     return NextResponse.json({
       success: true,
-      categories,
+      categories: categoriesWithNumbers,
       parentCategories,
     });
   } catch (error) {

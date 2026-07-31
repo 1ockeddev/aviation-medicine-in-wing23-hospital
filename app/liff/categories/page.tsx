@@ -52,6 +52,7 @@ export default function LiffCategoriesPage() {
 
   useEffect(() => {
     initializeLiff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeLiff = async () => {
@@ -147,7 +148,7 @@ export default function LiffCategoriesPage() {
         closeModal();
         await fetchCategories();
       } else {
-        setFormError(result.error || 'เกิดข้อผิดพลาด');
+        setFormError(typeof result.error === 'string' ? result.error : 'เกิดข้อผิดพลาด');
       }
     } catch (err) {
       setFormError('เกิดข้อผิดพลาดในการบันทึก');
@@ -167,7 +168,7 @@ export default function LiffCategoriesPage() {
         showToast('ลบหมวดหมู่สำเร็จ', 'success');
         await fetchCategories();
       } else {
-        showToast(result.error || 'ไม่สามารถลบหมวดหมู่ได้', 'error');
+        showToast(typeof result.error === 'string' ? result.error : 'ไม่สามารถลบหมวดหมู่ได้', 'error');
       }
     } catch (err) {
       showToast('เกิดข้อผิดพลาดในการลบ', 'error');
