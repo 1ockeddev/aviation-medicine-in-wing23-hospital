@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
+    "db:migrate-logs": "bash scripts/migrate-activity-logs.sh",
+    "prisma:generate": "prisma generate",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

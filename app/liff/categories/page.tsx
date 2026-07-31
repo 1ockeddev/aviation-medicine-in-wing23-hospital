@@ -212,7 +212,7 @@ export default function LiffCategoriesPage() {
           
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-gray-800 truncate">
-              {category.number}. {category.name}
+              {category.name}
             </h3>
             <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
               <span className="flex items-center gap-1">
@@ -309,7 +309,9 @@ export default function LiffCategoriesPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {filteredCategories.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <FolderIcon size={48} className="mx-auto text-gray-400 mb-3" />
+              <div className="flex justify-center mb-3">
+                <FolderIcon size={48} className="text-gray-400" />
+              </div>
               <p className="text-gray-600">
                 {searchQuery ? 'ไม่พบหมวดหมู่ที่ค้นหา' : 'ยังไม่มีหมวดหมู่'}
               </p>
@@ -379,7 +381,7 @@ export default function LiffCategoriesPage() {
                   <option value="">-- ไม่มี (หมวดหมู่หลัก) --</option>
                   {parentCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.number}. {cat.name}
+                      {cat.name}
                     </option>
                   ))}
                 </select>

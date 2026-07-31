@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { logActivity } from '@/lib/activity-log';
 
 // Helper to revalidate all relevant pages
 function revalidateAll() {
@@ -54,8 +55,22 @@ export async function createMedication(
 
   try {
     // Store medication in database (Requirement 3.4)
-    await prisma.medication.create({
+    const medication = await prisma.medication.create({
       data: validatedFields.data,
+      include: {
+        category: {
+          select: { name: true },
+        },
+      },
+    });
+
+    // Log activity
+    await logActivity({
+      action: 'CREATE',
+      entity: 'Medication',
+      entityId: medication.id,
+      entityName: medication.name,
+      details: `Created in category: ${medication.category.name}`,
     });
 
     // Invalidate cache (Requirement 5.3)
@@ -110,10 +125,41 @@ export async function updateMedication(
   }
 
   try {
+    // Get old medication data
+    const oldMedication = await prisma.medication.findUnique({
+      where: { id },
+      select: { name: true, categoryId: true, status: true },
+    });
+
     // Update medication in database (Requirement 5.4)
-    await prisma.medication.update({
+    const medication = await prisma.medication.update({
       where: { id },
       data: validatedFields.data,
+      include: {
+        category: {
+          select: { name: true },
+        },
+      },
+    });
+
+    // Log activity
+    const changes = [];
+    if (oldMedication?.name !== medication.name) {
+      changes.push(`name: "${oldMedication?.name}" → "${medication.name}"`);
+    }
+    if (oldMedication?.categoryId !== medication.categoryId) {
+      changes.push(`category: ${medication.category.name}`);
+    }
+    if (oldMedication?.status !== medication.status) {
+      changes.push(`status: ${medication.status}`);
+    }
+
+    await logActivity({
+      action: 'UPDATE',
+      entity: 'Medication',
+      entityId: medication.id,
+      entityName: medication.name,
+      details: changes.length > 0 ? changes.join(', ') : 'Updated medication',
     });
 
     // Invalidate cache for list and detail pages
@@ -141,9 +187,24 @@ export async function deleteMedication(
   }
 
   try {
+    // Get medication data before deletion
+    const medication = await prisma.medication.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     // Remove medication from database (Requirement 6.3)
     await prisma.medication.delete({
       where: { id },
+    });
+
+    // Log activity
+    await logActivity({
+      action: 'DELETE',
+      entity: 'Medication',
+      entityId: id,
+      entityName: medication?.name || 'Unknown',
+      details: 'Deleted medication',
     });
 
     // Invalidate cache

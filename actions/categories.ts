@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { logActivity } from '@/lib/activity-log';
 
 // Helper to revalidate all relevant pages
 function revalidateAll() {
@@ -89,12 +90,22 @@ export async function createCategory(
 
     const nextOrder = maxOrderCategory ? maxOrderCategory.order + 1 : 0;
 
-    await prisma.category.create({
+    const category = await prisma.category.create({
       data: {
         ...validatedFields.data,
         order: nextOrder,
       },
     });
+
+    // Log activity
+    await logActivity({
+      action: 'CREATE',
+      entity: 'Category',
+      entityId: category.id,
+      entityName: category.name,
+      details: parentId ? `Created as sub-category under ${parentId}` : 'Created as root category',
+    });
+
     revalidateAll();
     return { success: true };
   } catch (error) {
@@ -172,10 +183,33 @@ export async function updateCategory(
       return { error: 'ชื่อหมวดหมู่นี้มีอยู่แล้ว' };
     }
 
-    await prisma.category.update({
+    const oldCategory = await prisma.category.findUnique({
+      where: { id },
+      select: { name: true, parentId: true },
+    });
+
+    const category = await prisma.category.update({
       where: { id },
       data: validatedFields.data,
     });
+
+    // Log activity
+    const changes = [];
+    if (oldCategory?.name !== category.name) {
+      changes.push(`name: "${oldCategory?.name}" → "${category.name}"`);
+    }
+    if (oldCategory?.parentId !== category.parentId) {
+      changes.push(`parent changed`);
+    }
+
+    await logActivity({
+      action: 'UPDATE',
+      entity: 'Category',
+      entityId: category.id,
+      entityName: category.name,
+      details: changes.length > 0 ? changes.join(', ') : 'Updated category',
+    });
+
     revalidateAll();
     return { success: true };
   } catch (error) {
@@ -220,8 +254,22 @@ export async function deleteCategory(
       };
     }
 
+    const category = await prisma.category.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     await prisma.category.delete({
       where: { id },
+    });
+
+    // Log activity
+    await logActivity({
+      action: 'DELETE',
+      entity: 'Category',
+      entityId: id,
+      entityName: category?.name || 'Unknown',
+      details: 'Deleted category',
     });
 
     revalidateAll();

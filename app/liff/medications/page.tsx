@@ -323,7 +323,7 @@ export default function LiffMedicationsPage() {
             <option value="">ทุกหมวดหมู่</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>
-                {cat.number}. {cat.name}
+                {cat.name}
               </option>
             ))}
           </select>
@@ -344,7 +344,9 @@ export default function LiffMedicationsPage() {
       <div className="p-4 space-y-3">
         {filteredMedications.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <PillIcon size={48} className="mx-auto text-gray-400 mb-3" />
+            <div className="flex justify-center mb-3">
+              <PillIcon size={48} className="text-gray-400" />
+            </div>
             <p className="text-gray-600">
               {searchQuery || filterCategory ? 'ไม่พบยาที่ค้นหา' : 'ยังไม่มียาในระบบ'}
             </p>
@@ -367,7 +369,7 @@ export default function LiffMedicationsPage() {
               <div className="space-y-2 text-sm text-gray-600 mb-3">
                 <div className="flex items-center gap-2">
                   <FolderIcon size={16} className="flex-shrink-0" />
-                  <span className="truncate">{medication.category.number}. {medication.category.name}</span>
+                  <span className="truncate">{medication.category.name}</span>
                 </div>
                 {medication.expirationDate && (
                   <div className="flex items-center gap-2">
@@ -473,7 +475,7 @@ export default function LiffMedicationsPage() {
                   <option value="">-- เลือกหมวดหมู่ --</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.number}. {cat.name}
+                      {cat.name}
                     </option>
                   ))}
                 </select>

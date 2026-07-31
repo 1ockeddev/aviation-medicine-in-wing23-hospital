@@ -118,3 +118,23 @@ model LineUser {
   @@index([notificationsEnabled])
   @@map("line_users")
 }
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  username    String?
+  action      String   // CREATE, UPDATE, DELETE
+  entity      String   // Category, Medication, LineUser
+  entityId    String?
+  entityName  String?
+  details     String?  @db.Text
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
