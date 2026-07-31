@@ -70,7 +70,8 @@ export default function LiffLineUsersPage() {
         if (currentUser) {
           setUsers([currentUser]);
         } else {
-          setError('ไม่พบข้อมูลของคุณในระบบ กรุณาลองส่งข้อความใน LINE OA ก่อน');
+          // User not found - try to register automatically
+          await registerCurrentUser();
         }
       } else {
         setError('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
@@ -78,6 +79,34 @@ export default function LiffLineUsersPage() {
     } catch (err) {
       console.error('Error fetching users', err);
       setError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    }
+  };
+
+  const registerCurrentUser = async () => {
+    try {
+      const profile = await liff.getProfile();
+      
+      const response = await fetch('/api/line/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: profile.userId,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh user data after registration
+        await fetchUsers(profile.userId);
+      } else {
+        setError('ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง');
+      }
+    } catch (err) {
+      console.error('Error registering user', err);
+      setError('เกิดข้อผิดพลาดในการลงทะเบียน');
     }
   };
 
@@ -155,17 +184,31 @@ export default function LiffLineUsersPage() {
       <div className="max-w-7xl mx-auto p-4 space-y-3">
         {users.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-            <UserIcon size={64} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 mb-2">ไม่พบข้อมูลของคุณ</p>
-            <p className="text-sm text-gray-500 mt-2">
-              กรุณาส่งข้อความใน LINE OA เพื่อลงทะเบียน
-            </p>
-            <button
-              onClick={() => liff.isInClient() && liff.closeWindow()}
-              className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              ปิดหน้าต่าง
-            </button>
+            <div className="flex justify-center mb-4">
+              <UserIcon size={64} className="text-gray-400" />
+            </div>
+            {error ? (
+              <>
+                <p className="text-gray-800 font-medium mb-2">เกิดข้อผิดพลาด</p>
+                <p className="text-sm text-gray-600 mb-4">{error}</p>
+                <button
+                  onClick={() => {
+                    setError('');
+                    initializeLiff();
+                  }}
+                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  ลองอีกครั้ง
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-800 font-medium mb-2">กำลังลงทะเบียน...</p>
+                <p className="text-sm text-gray-500">
+                  กรุณารอสักครู่
+                </p>
+              </>
+            )}
           </div>
         ) : (
           users.map((user) => (
