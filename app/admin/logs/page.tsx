@@ -9,9 +9,10 @@ export const metadata = {
 export default async function LogsPage({
   searchParams,
 }: {
-  searchParams: { page?: string; entity?: string; action?: string };
+  searchParams: Promise<{ page?: string; entity?: string; action?: string }>;
 }) {
-  const page = Number(searchParams.page) || 1;
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
   const limit = 50;
   const offset = (page - 1) * limit;
 
@@ -19,8 +20,8 @@ export default async function LogsPage({
     getActivityLogs({
       limit,
       offset,
-      entity: searchParams.entity as any,
-      action: searchParams.action as any,
+      entity: params.entity as any,
+      action: params.action as any,
     }),
     getActivityStats(),
   ]);
